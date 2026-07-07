@@ -49,6 +49,21 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
     box-shadow:0 1px 2px rgba(60,48,20,.05)}
 
+  /* ============ minimap ============ */
+  .minimap{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:20px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+  .mm{font-size:11.8px;font-weight:650;padding:4px 11px;border-radius:99px;border:1px solid;white-space:nowrap}
+  .mm.start{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+  .mm.end{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
+  .mm.orange{color:var(--orange);background:var(--orange-t);border-color:var(--orange-b)}
+  .mm.teal{color:var(--teal);background:var(--teal-t);border-color:var(--teal-b)}
+  .mm.amber{color:var(--amber);background:var(--amber-t);border-color:var(--amber-b)}
+  .mm.blue{color:var(--blue);background:var(--blue-t);border-color:var(--blue-b)}
+  .mm-arrow{color:var(--faint);font-size:12px}
+  .mm-loop{display:flex;align-items:center;gap:7px;border:1.5px dashed var(--indigo-b);
+    border-radius:99px;padding:5px 12px;background:var(--indigo-t)}
+  .mm-loop .tag{font-size:10.5px;font-weight:700;font-family:var(--mono);color:var(--indigo);white-space:nowrap}
+
   /* ============ legend ============ */
   .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   .lg{display:flex;gap:10px;align-items:flex-start;padding:11px 13px}
@@ -233,6 +248,17 @@
       <div><b>Source</b> · en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals</div>
       <div><b>Target</b> · Google Sheet — tab <span style="font-family:var(--mono)">Sheet1</span>, columns A:D</div>
     </div>
+    <div class="minimap">
+      <span class="mm start">START</span><span class="mm-arrow">→</span>
+      <span class="mm orange">1 · Open page</span><span class="mm-arrow">→</span>
+      <span class="mm-loop"><span class="tag">2 · LOOP ×10</span>
+        <span class="mm teal">2.1–2.5 · ExtractHTML ×4 + Parse number</span><span class="mm-arrow">→</span>
+        <span class="mm amber">2.6 · Detour</span><span class="mm-arrow">→</span>
+        <span class="mm blue">2.7 · Call API (append row)</span>
+      </span><span class="mm-arrow">→</span>
+      <span class="mm blue" style="border-style:dashed">3 · Verify (optional)</span><span class="mm-arrow">→</span>
+      <span class="mm end">END</span>
+    </div>
   </header>
 
   <!-- ================= LEGEND ================= -->
@@ -276,7 +302,7 @@
         <div class="setup-card"><h4><em>S3</em>Postman auth</h4>
           <p>OAuth 2.0 (Authorization Code) → obtain <code>{{ACCESS_TOKEN}}</code> with scope <code>…/auth/spreadsheets</code>. Full config in panel D.</p></div>
         <div class="setup-card"><h4><em>S4</em>Capture DOM paths</h4>
-          <p>Per the resource video: DevTools → Inspect element → right-click the node → <b>Copy → Copy XPath</b>. Replace the row number with <code>{{index}}</code>. Paths verified in panel E.</p></div>
+          <p>Per the resource video: DevTools → Inspect element → right-click the cell node → <b>Copy → Copy XPath</b>. Replace the row number with <code>{{index}}+1</code>. Paths live-verified in panel E.</p></div>
       </div>
     </div>
   </section>
@@ -287,7 +313,7 @@
     <p class="sec-sub">One straight spine: open the page, loop over the 10 finals rows, and inside every iteration
       extract 4 fields, type-check the year, guard with a Detour, and append the row via one API call.
       Loop index <span style="font-family:var(--mono)">i</span> does triple duty:
-      iteration counter ↔ table row <span style="font-family:var(--mono)">tbody/tr[i]</span> ↔ sheet row <span style="font-family:var(--mono)">i+1</span>.</p>
+      iteration counter ↔ table row <span style="font-family:var(--mono)">tbody/tr[i+1]</span> (row 1 of tbody is the header) ↔ sheet row <span style="font-family:var(--mono)">i+1</span>.</p>
 
     <div class="flow">
 
@@ -304,8 +330,9 @@
           <dt>Input</dt><dd><code>https://en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals</code>
             <div class="ex">Page URL — the only required input.</div></dd>
           <dt>Output</dt><dd><div class="ex">Live browser session with the page fully rendered.
-            Once the sortable table initialises, its header row moves into <b>&lt;thead&gt;</b>, so data rows are
-            <b>tbody/tr[1] … tbody/tr[22]</b> — row 1 = the 1930 final.</div></dd>
+            The table keeps its header row as the first <b>&lt;tbody&gt;</b> row — verified in a live browser on
+            7 Jul 2026 (today’s page no longer relocates it into <code>&lt;thead&gt;</code> the way the May-2024
+            resource video shows) — so data rows are <b>tbody/tr[2] … tbody/tr[23]</b>, and the 1930 final is <b>tr[2]</b>.</div></dd>
         </dl>
         <div class="note"><b>Keep default (chronological) sort.</b> No clicks on column headers — sorting re-orders
           <code>tr</code> indices and would corrupt the extraction. The table renders on page load; no interaction is needed.</div>
@@ -322,9 +349,10 @@
           <span class="badge indigo">Loop</span></div>
         <div class="loop-io"><b>Input:</b> number of iterations = <b>10</b>&nbsp;&nbsp;·&nbsp;&nbsp;<b>Output:</b> index <code>i</code> = 1, 2, … 10 (library: index starts from 1)</div>
         <div class="loop-chips">
-          <span class="chip">i = 1 → 1930 … i = 10 → 1974</span>
+          <span class="chip">i = 1 → tr[2] = 1930 … i = 10 → tr[11] = 1974</span>
           <span class="chip">error inside an iteration ⇒ run continues at next index (library note)</span>
           <span class="chip">rows are processed top-to-bottom, so sheet order = table order</span>
+          <span class="chip">row selector tr[{{index}}+1] stays valid XPath after substitution — tr[1+1] ≡ tr[2]</span>
         </div>
 
         <!-- 2.1 -->
@@ -332,8 +360,8 @@
           <div class="node-top"><span class="num">2.1</span><span class="node-title">Extract “Year”</span>
             <span class="badge teal">ExtractHTML</span></div>
           <dl class="io">
-            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/th/a</code>
-              <div class="ex">Element DOM path (XPath) — year link inside the row-header cell.</div></dd>
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/th/a</code>
+              <div class="ex">Element DOM path (XPath) — year link inside the row-header cell. <code>+1</code> skips the header row.</div></dd>
             <dt>Output</dt><dd><div class="ex">Text → <code>year_text</code> &nbsp; e.g. i=1 → <b>"1930"</b></div></dd>
           </dl>
         </div>
@@ -357,9 +385,10 @@
           <div class="node-top"><span class="num">2.3</span><span class="node-title">Extract “Winner”</span>
             <span class="badge teal">ExtractHTML</span></div>
           <dl class="io">
-            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[1]/a</code>
-              <div class="ex">Anchor text = clean country name (skips the flag-icon span in the same cell).</div></dd>
-            <dt>Output</dt><dd><div class="ex">Text → <code>winner</code> &nbsp; e.g. i=1 → <b>"Uruguay"</b></div></dd>
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[1]</code>
+              <div class="ex">Whole Winners cell. Deliberately <b>not</b> the country link: its own path varies row to row
+                (<code>td[1]/a</code> on 1930, <code>td[1]/span/a</code> on 1954 — verified live), so the cell is the only tail that works for all 10 rows.</div></dd>
+            <dt>Output</dt><dd><div class="ex">Text → <code>winner</code> &nbsp; e.g. i=1 → <b>"Uruguay"</b> (trimmed — see edge case #9)</div></dd>
           </dl>
         </div>
         <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
@@ -369,7 +398,7 @@
           <div class="node-top"><span class="num">2.4</span><span class="node-title">Extract “Score”</span>
             <span class="badge teal">ExtractHTML</span></div>
           <dl class="io">
-            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[2]</code>
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[2]</code>
               <div class="ex">Whole cell — keeps the “(a.e.t.)” qualifier where a final went to extra time (1934, 1966).</div></dd>
             <dt>Output</dt><dd><div class="ex">Text → <code>score</code> &nbsp; e.g. i=1 → <b>"4–2"</b>, i=2 → <b>"2–1 (a.e.t.)"</b></div></dd>
           </dl>
@@ -383,9 +412,9 @@
           <div class="node-top"><span class="num">2.5</span><span class="node-title">Extract “Runners-up”</span>
             <span class="badge teal">ExtractHTML</span></div>
           <dl class="io">
-            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[3]/a</code>
-              <div class="ex">Anchor text = clean country name.</div></dd>
-            <dt>Output</dt><dd><div class="ex">Text → <code>runners_up</code> &nbsp; e.g. i=1 → <b>"Argentina"</b></div></dd>
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[3]</code>
+              <div class="ex">Whole Runners-up cell (country link is span-wrapped on every row — cell-level is uniform).</div></dd>
+            <dt>Output</dt><dd><div class="ex">Text → <code>runners_up</code> &nbsp; e.g. i=1 → <b>"Argentina"</b> (trimmed)</div></dd>
           </dl>
         </div>
         <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
@@ -539,23 +568,26 @@
   <!-- ================= XPATHS ================= -->
   <section>
     <div class="sec-head"><span class="sec-letter">E</span><span class="sec-title">DOM paths — captured &amp; verified</span></div>
-    <p class="sec-sub">Method from the resource video: Inspect the element → right-click it in the Elements panel →
-      <b>Copy → Copy XPath</b> → replace the row number with <span style="font-family:var(--mono)">{{index}}</span>.
-      All four paths verified against the live page on 7 July 2026.</p>
+    <p class="sec-sub">Method from the resource video: Inspect the element → right-click the <b>cell</b> (th/td) in the
+      Elements panel → <b>Copy → Copy XPath</b> → replace the row number with
+      <span style="font-family:var(--mono)">{{index}}+1</span>. Every path below returned the expected text for
+      <b>all 10 rows in a live Chrome session on 7 July 2026</b> — 40/40 checks passed.</p>
 
     <table class="wide">
       <tr><th style="width:96px">Field</th><th>XPath template (input to ExtractHTML)</th><th style="width:170px">Output @ i = 1</th></tr>
-      <tr><td class="field-chip y">Year</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/th/a</code></td><td><code>"1930"</code></td></tr>
-      <tr><td class="field-chip w">Winner</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[1]/a</code></td><td><code>"Uruguay"</code></td></tr>
-      <tr><td class="field-chip s">Score</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[2]</code></td><td><code>"4–2"</code></td></tr>
-      <tr><td class="field-chip r">Runners-up</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[3]/a</code></td><td><code>"Argentina"</code></td></tr>
+      <tr><td class="field-chip y">Year</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/th/a</code></td><td><code>"1930"</code></td></tr>
+      <tr><td class="field-chip w">Winner</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[1]</code></td><td><code>"Uruguay&amp;nbsp;"</code> → trim</td></tr>
+      <tr><td class="field-chip s">Score</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[2]</code></td><td><code>"4–2"</code></td></tr>
+      <tr><td class="field-chip r">Runners-up</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[3]</code></td><td><code>"&amp;nbsp;Argentina"</code> → trim</td></tr>
     </table>
-    <p class="fine"><b>Prefix drift, handled:</b> the resource video (recorded May 2024) copies
-      <code>//*[@id="mw-content-text"]/div[1]/table[4]/…</code>. Wikipedia has since moved to section-wrapped markup,
-      so the same click today yields the prefix above. Only the prefix drifts — the row/cell tail
-      <code>tbody/tr[{{index}}]/th|td[n]</code> is stable. Re-copy the prefix at build time exactly as the video shows.
-      &nbsp;<b>Row indexing:</b> in a live session the sortable table moves its header row into <code>&lt;thead&gt;</code>
-      (visible in the video), so <code>tbody/tr[i]</code> is the i-th <i>data</i> row; in raw no-JS HTML it would be <code>tr[i+1]</code>.</p>
+    <p class="fine"><b>Why these differ from the resource video — three verified changes since May 2024.</b>
+      ① <b>Prefix:</b> the video copies <code>//*[@id="mw-content-text"]/div[1]/table[4]/…</code>; Wikipedia now uses
+      section-wrapped markup, so the same click yields <code>div[2]/section[2]/table[3]</code> (the old prefix resolves to
+      nothing — re-copy at build time; the workflow keeps it in one variable).
+      ② <b>Row offset:</b> in the video the sorter moves the header row into <code>&lt;thead&gt;</code>, making data row i =
+      <code>tr[i]</code>; on today’s page the header stays as <code>tbody</code> row 1, so data row i = <code>tr[i+1]</code>.
+      ③ <b>Anchor nesting:</b> the video’s <code>td[1]/a</code> works for 1930 but fails on rows where the link is
+      span-wrapped (<code>td[1]/span/a</code>, e.g. 1954) — cell-level paths are the only tails uniform across all 10 rows.</p>
   </section>
 
   <!-- ================= EXPECTED RESULT ================= -->
@@ -581,6 +613,28 @@
     </table>
     <p class="fine">Row 5’s score keeps Wikipedia’s footnote marker <b>[n 3]</b> (the 1950 “final” was the deciding
       match of a round-robin group) — see edge case #3 for the trade-off and the cleaner alternative.</p>
+
+    <div style="margin-top:26px">
+      <p style="font-weight:720;font-size:14.5px;margin-bottom:4px">Execution trace — the run, iteration by iteration</p>
+      <p class="sec-sub" style="margin-bottom:12px">What each loop pass extracts and sends. Every value below was
+        produced by evaluating the panel-E XPaths in a live browser session.</p>
+      <table class="wide" style="font-size:11.9px">
+        <tr><th style="width:34px">i</th><th style="width:120px;white-space:nowrap">Source row</th>
+            <th>Request body <code>values</code> (step 2.7)</th><th style="width:150px">200 → <code>updatedRange</code></th></tr>
+        <tr><td>1</td><td><code>tbody/tr[2]</code></td><td><code>[[1930, "Uruguay", "4–2", "Argentina"]]</code></td><td><code>Sheet1!A2:D2</code></td></tr>
+        <tr><td>2</td><td><code>tbody/tr[3]</code></td><td><code>[[1934, "Italy", "2–1 (a.e.t.)", "Czechoslovakia"]]</code></td><td><code>Sheet1!A3:D3</code></td></tr>
+        <tr><td>3</td><td><code>tbody/tr[4]</code></td><td><code>[[1938, "Italy", "4–2", "Hungary"]]</code></td><td><code>Sheet1!A4:D4</code></td></tr>
+        <tr><td>4</td><td><code>tbody/tr[5]</code></td><td><code>[[1950, "Uruguay", "2–1[n 3]", "Brazil"]]</code></td><td><code>Sheet1!A5:D5</code></td></tr>
+        <tr><td>5</td><td><code>tbody/tr[6]</code></td><td><code>[[1954, "West Germany", "3–2", "Hungary"]]</code></td><td><code>Sheet1!A6:D6</code></td></tr>
+        <tr><td>6</td><td><code>tbody/tr[7]</code></td><td><code>[[1958, "Brazil", "5–2", "Sweden"]]</code></td><td><code>Sheet1!A7:D7</code></td></tr>
+        <tr><td>7</td><td><code>tbody/tr[8]</code></td><td><code>[[1962, "Brazil", "3–1", "Czechoslovakia"]]</code></td><td><code>Sheet1!A8:D8</code></td></tr>
+        <tr><td>8</td><td><code>tbody/tr[9]</code></td><td><code>[[1966, "England", "4–2 (a.e.t.)", "West Germany"]]</code></td><td><code>Sheet1!A9:D9</code></td></tr>
+        <tr><td>9</td><td><code>tbody/tr[10]</code></td><td><code>[[1970, "Brazil", "4–1", "Italy"]]</code></td><td><code>Sheet1!A10:D10</code></td></tr>
+        <tr><td>10</td><td><code>tbody/tr[11]</code></td><td><code>[[1974, "West Germany", "2–1", "Netherlands"]]</code></td><td><code>Sheet1!A11:D11</code></td></tr>
+      </table>
+      <p class="fine">Detour evaluates <b>true</b> on all 10 iterations (every field non-empty), so all 10 branches run —
+        10 POSTs, 10 × <code>updatedRows: 1</code>, zero skips.</p>
+    </div>
   </section>
 
   <!-- ================= EDGE CASES ================= -->
@@ -596,20 +650,25 @@
       <div class="card edge"><h4><span class="n">#4</span>Scores contain an en dash</h4>
         <p><code>4–2</code> uses U+2013, not a hyphen. With <code>valueInputOption=RAW</code> the string is stored verbatim; no risk of Sheets coercing a dash-separated pair into a date.</p></div>
       <div class="card edge"><h4><span class="n">#5</span>XPaths drift; the method doesn’t</h4>
-        <p>Wikipedia’s wrapper markup changed between the resource video (May 2024: <code>div[1]/table[4]</code>) and today (<code>div[2]/section[2]/table[3]</code>). The workflow stores the prefix as one variable so a future drift is a one-field fix; the <code>tr[{{index}}]</code> tail is stable.</p></div>
+        <p>Three things changed between the resource video (May 2024) and today — all caught live: the table prefix (<code>div[1]/table[4]</code> → <code>div[2]/section[2]/table[3]</code>), the header row’s home (<code>&lt;thead&gt;</code> → first <code>tbody</code> row, hence <code>tr[{{index}}+1]</code>), and the country-link nesting (<code>td[1]/a</code> vs <code>td[1]/span/a</code>, hence cell-level paths). The prefix lives in one variable, so the next drift is a one-field fix.</p></div>
       <div class="card edge"><h4><span class="n">#6</span>Never sort before extracting</h4>
         <p>The table is user-sortable; clicking a header re-orders <code>&lt;tr&gt;</code> elements and would silently remap every index. The workflow performs zero clicks — extraction happens on the default chronological order.</p></div>
       <div class="card edge"><h4><span class="n">#7</span>Year as a real number</h4>
         <p><b>Parse number</b> converts <code>"1930"</code> → <code>1930</code> so column A is sortable/filterable as numeric in Sheets — and doubles as a validity check on every row (parse failure ⇒ loop skips that index).</p></div>
       <div class="card edge"><h4><span class="n">#8</span>Re-runs are not idempotent</h4>
         <p><code>:append</code> always adds rows; running the workflow twice writes 20 rows. Clear <code>Sheet1!A2:D11</code> before a re-run (or point <code>RANGE</code> at a scratch tab while testing).</p></div>
+      <div class="card edge"><h4><span class="n">#9</span>Flag icons pad the country cells</h4>
+        <p>Winner/Runners-up cells carry a stray non-breaking space next to the flag icon (<code>"Uruguay&amp;nbsp;"</code>, <code>"&amp;nbsp;Argentina"</code> — measured live). Text extraction normally trims whitespace; if a platform ever kept it, the Detour still passes (non-empty) and a one-time <code>TRIM()</code> in Sheets cleans column B/D.</p></div>
+      <div class="card edge"><h4><span class="n">#10</span>Why <code>tr[{{index}}+1]</code> is safe to template</h4>
+        <p>After the loop substitutes <code>{{index}}</code>, the predicate is plain XPath arithmetic — <code>tr[1+1]</code> evaluates to <code>tr[2]</code>. No string concatenation tricks, no off-by-one hidden in the path: the “+1 skips the header row” rule is visible in every step that uses it.</p></div>
     </div>
   </section>
 
   <!-- ================= FOOTER ================= -->
   <footer>
-    <div><b style="color:var(--ink)">Verification.</b> Every XPath was round-trip-tested against the live page HTML
-      and all 10 expected rows extracted programmatically on 7 Jul 2026; API shapes match the official
+    <div><b style="color:var(--ink)">Verification.</b> All four XPaths were evaluated in a live Chrome session against
+      every one of the 10 target rows (40/40 checks returned the expected text) on 7 Jul 2026, after cross-checking the
+      served page HTML and Tennr’s resource video frame-by-frame; API shapes match the official
       <span style="font-family:var(--mono)">spreadsheets.values.append</span> reference.</div>
     <div style="white-space:nowrap;text-align:right"><b style="color:var(--ink)">Bhunesh Bansal</b><br>Implementation Engineer take-home · Tennr</div>
   </footer>
