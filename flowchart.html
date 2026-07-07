@@ -397,7 +397,7 @@
           <p class="purpose">Library: “conditional execution like an ‘if’ statement; if true, run branch then resume the run.” One branch, one condition.</p>
           <dl class="io">
             <dt>Input</dt><dd><code>winner ≠ "" AND score ≠ "" AND runners_up ≠ ""</code>
-              <div class="ex">(<code>year</code> is already validated by step 2.2.) Guards against a silent partial extraction.</div></dd>
+              <div class="ex"><code>year</code> is already validated by step 2.2 — this guards the three text fields against a silent partial extraction.</div></dd>
             <dt>Output</dt><dd><div class="ex">true → branch executes (2.7), then the run resumes · false → branch skipped, loop moves on</div></dd>
           </dl>
         </div>
