@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wikipedia → Google Sheets · RPA Flowchart · Tennr IE Take-Home</title>
+<style>
+  :root{
+    --paper:#FBF8F1; --card:#FFFFFF; --ink:#211B10; --muted:#6E6552; --faint:#9A917E;
+    --line:#E6DECC; --line-strong:#CFC5AC;
+    --orange:#D9481C; --orange-t:#FCEDE6; --orange-b:#F0B7A0;
+    --teal:#0E7268;  --teal-t:#E4F2F0;   --teal-b:#9ED0CA;
+    --indigo:#4438C2;--indigo-t:#ECEAFA; --indigo-b:#BBB4EC;
+    --blue:#1A56C4;  --blue-t:#E7EEFB;   --blue-b:#A8C0EE;
+    --amber:#A85A08; --amber-t:#FAF0DC;  --amber-b:#E3C48F;
+    --green:#177A3D; --green-t:#E6F3EA;  --green-b:#A4D2B3;
+    --gray:#66707E;  --gray-t:#F2F4F6;   --gray-b:#C6CDD6;
+    --mono:"Cascadia Code","Consolas",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--paper)}
+  body{
+    font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Inter",Roboto,sans-serif;
+    color:var(--ink); background:var(--paper);
+    -webkit-font-smoothing:antialiased; line-height:1.45; font-size:14.5px;
+  }
+  .page{max-width:1080px;margin:0 auto;padding:42px 36px 60px}
+
+  /* ============ masthead ============ */
+  .masthead{border-bottom:3px solid var(--ink);padding-bottom:22px;margin-bottom:26px}
+  .kicker{display:flex;align-items:center;gap:10px;font-size:11.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:12px}
+  .kicker::after{content:"";flex:1;height:1px;background:var(--line-strong)}
+  h1{font-size:33px;line-height:1.12;font-weight:750;letter-spacing:-.015em;max-width:22ch}
+  h1 .arrow{color:var(--orange)}
+  .subtitle{margin-top:10px;font-size:15.5px;color:var(--muted);max-width:72ch}
+  .meta-row{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px;font-size:12.5px;color:var(--muted)}
+  .meta-row b{color:var(--ink);font-weight:650}
+
+  /* ============ section chrome ============ */
+  section{margin-top:44px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .sec-letter{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;background:var(--ink);
+    border-radius:6px;padding:3px 8px;letter-spacing:.05em}
+  .sec-title{font-size:20px;font-weight:720;letter-spacing:-.01em}
+  .sec-sub{color:var(--muted);font-size:13.5px;margin-bottom:18px;max-width:86ch}
+
+  /* ============ generic card ============ */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 1px 2px rgba(60,48,20,.05)}
+
+  /* ============ legend ============ */
+  .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .lg{display:flex;gap:10px;align-items:flex-start;padding:11px 13px}
+  .swatch{width:14px;height:14px;border-radius:4px;margin-top:3px;flex:none;border:1px solid rgba(0,0,0,.18)}
+  .lg b{font-size:13px;display:block}
+  .lg span{font-size:12px;color:var(--muted);display:block;margin-top:1px}
+  .lg .use{font-family:var(--mono);font-size:10.5px;margin-top:4px;display:inline-block;
+    padding:1px 7px;border-radius:99px;background:var(--gray-t);border:1px solid var(--gray-b);color:var(--gray)}
+  .lg .use.yes{background:var(--green-t);border-color:var(--green-b);color:var(--green)}
+
+  /* ============ setup lane ============ */
+  .setup{border:1.5px dashed var(--gray-b);border-radius:14px;background:#F7F6F2;padding:16px 18px 18px}
+  .setup-tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
+  .setup-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .setup-card{background:#fff;border:1px solid var(--gray-b);border-radius:10px;padding:11px 12px}
+  .setup-card h4{font-size:12.5px;margin-bottom:5px}
+  .setup-card h4 em{font-family:var(--mono);font-style:normal;color:var(--gray);margin-right:6px;font-size:11px}
+  .setup-card p{font-size:11.8px;color:var(--muted)}
+  .setup-card code{font-size:10.8px}
+
+  /* ============ flowchart ============ */
+  .flow{display:flex;flex-direction:column;align-items:center}
+  .term{padding:8px 26px;border-radius:99px;font-weight:700;font-size:13px;letter-spacing:.08em;
+    background:var(--ink);color:#fff}
+  .term.end{background:var(--green)}
+
+  .connector{display:flex;flex-direction:column;align-items:center;height:34px;position:relative}
+  .connector .stem{width:2px;flex:1;background:var(--ink)}
+  .connector .head{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
+    border-top:7px solid var(--ink)}
+  .connector .lbl{position:absolute;left:calc(50% + 12px);top:50%;transform:translateY(-58%);
+    font-size:11px;color:var(--muted);white-space:nowrap;font-family:var(--mono)}
+  .connector.tall{height:44px}
+
+  .node{width:640px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gray);
+    border-radius:10px;padding:13px 16px 13px 15px;box-shadow:0 1px 3px rgba(60,48,20,.07)}
+  .node.orange{border-left-color:var(--orange)} .node.teal{border-left-color:var(--teal)}
+  .node.blue{border-left-color:var(--blue)}     .node.amber{border-left-color:var(--amber)}
+  .node.dashed{border-style:dashed;border-left-style:solid;background:#FDFCF9}
+
+  .node-top{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .num{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--faint)}
+  .node-title{font-weight:720;font-size:15px;letter-spacing:-.005em}
+  .badge{margin-left:auto;font-size:10.5px;font-weight:700;font-family:var(--mono);white-space:nowrap;
+    padding:2px 9px;border-radius:99px;border:1px solid}
+  .badge.orange{color:var(--orange);background:var(--orange-t);border-color:var(--orange-b)}
+  .badge.teal{color:var(--teal);background:var(--teal-t);border-color:var(--teal-b)}
+  .badge.indigo{color:var(--indigo);background:var(--indigo-t);border-color:var(--indigo-b)}
+  .badge.blue{color:var(--blue);background:var(--blue-t);border-color:var(--blue-b)}
+  .badge.amber{color:var(--amber);background:var(--amber-t);border-color:var(--amber-b)}
+  .purpose{font-size:12.8px;color:var(--muted);margin-bottom:9px}
+
+  .io{display:grid;grid-template-columns:64px 1fr;gap:4px 10px;font-size:12.3px}
+  .io dt{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);padding-top:2px}
+  .io dd code{display:block}
+  code{font-family:var(--mono);font-size:11.6px;background:#F5F2E9;border:1px solid var(--line);
+    border-radius:5px;padding:2px 7px;overflow-wrap:anywhere}
+  .io .ex{color:var(--muted);font-size:11.6px;margin-top:2px}
+  .io .ex code{display:inline;padding:1px 5px}
+  .io .ex b{color:var(--teal);font-weight:650}
+  .note{margin-top:9px;font-size:11.6px;color:var(--muted);border-top:1px dashed var(--line);padding-top:7px}
+  .note b{color:var(--ink)}
+  .qbadge{color:var(--amber);font-weight:700}
+
+  /* loop frame */
+  .loop{width:760px;border:2px dashed var(--indigo-b);background:linear-gradient(180deg,#F1EFFB 0%,#F6F5FC 100%);
+    border-radius:16px;padding:16px 0 18px;display:flex;flex-direction:column;align-items:center;position:relative}
+  .loop-head{width:640px;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+  .loop-head .node-title{color:var(--indigo)}
+  .loop-io{width:640px;font-size:12.3px;color:var(--muted);margin-bottom:2px}
+  .loop-io b{color:var(--ink)}
+  .loop-chips{width:640px;display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+  .chip{font-size:11px;padding:3px 10px;border-radius:99px;background:#fff;border:1px solid var(--indigo-b);color:var(--indigo)}
+  .loop-return{position:absolute;left:14px;top:210px;bottom:64px;width:12px;
+    border-left:2px dashed var(--indigo);border-bottom:2px dashed var(--indigo);border-top:2px dashed var(--indigo);
+    border-bottom-left-radius:10px;border-top-left-radius:10px}
+  .loop-return::after{content:"";position:absolute;right:-2px;top:-5px;
+    border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid var(--indigo);
+    transform:rotate(-90deg)}
+  .loop-return-lbl{position:absolute;left:-4px;top:50%;transform:rotate(180deg);writing-mode:vertical-rl;
+    font-family:var(--mono);font-size:10.5px;color:var(--indigo);letter-spacing:.04em;translate:0 -50%}
+  .loop-exit{width:640px;margin-top:14px;border-top:1px solid var(--indigo-b);padding-top:9px;
+    font-size:11.8px;color:var(--indigo);font-family:var(--mono);text-align:center}
+
+  /* detour branch */
+  .branching{width:640px;display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:stretch}
+  .branch-false{border:1px dashed var(--gray-b);border-radius:10px;background:#FAFAF8;padding:10px 12px;
+    display:flex;flex-direction:column;gap:5px}
+  .branch-false .tag{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--gray)}
+  .branch-false p{font-size:11.6px;color:var(--muted)}
+  .branch-true{display:flex;flex-direction:column}
+  .branch-true .tag{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--green);margin-bottom:6px}
+  .branch-true .node{width:100%}
+  .mini-connector{display:flex;justify-content:center;margin:2px 0}
+  .converge{width:640px;text-align:center;font-size:11.5px;color:var(--muted);margin-top:10px;
+    border-top:1px dashed var(--line-strong);padding-top:8px}
+
+  .final-chip{margin-top:12px;font-size:12.5px;color:var(--green);background:var(--green-t);
+    border:1px solid var(--green-b);border-radius:10px;padding:8px 16px;font-weight:600}
+
+  /* ============ api panel ============ */
+  .api{padding:0;overflow:hidden}
+  .api-line{display:flex;align-items:center;gap:12px;background:var(--ink);color:#EDE8DC;padding:13px 18px}
+  .method{background:var(--blue);color:#fff;font-family:var(--mono);font-weight:700;font-size:13px;
+    padding:4px 12px;border-radius:7px;letter-spacing:.03em}
+  .url{font-family:var(--mono);font-size:12.8px;overflow-wrap:anywhere;line-height:1.5}
+  .url i{font-style:normal;color:#F2B296}
+  .api-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .api-col{padding:16px 18px}
+  .api-col + .api-col{border-left:1px solid var(--line)}
+  .api-col h4{font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);margin:14px 0 7px}
+  .api-col h4:first-child{margin-top:0}
+  table.kv{width:100%;border-collapse:collapse;font-size:12.2px}
+  table.kv th,table.kv td{text-align:left;padding:5px 8px;border:1px solid var(--line);vertical-align:top}
+  table.kv th{background:#F5F2E9;font-size:10.8px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  table.kv td code{background:transparent;border:none;padding:0}
+  table.kv td:first-child{white-space:nowrap}
+  table.kv td.why{color:var(--muted);font-size:11.6px}
+  pre{font-family:var(--mono);font-size:11.8px;line-height:1.55;background:#252014;color:#EFE9DA;
+    border-radius:9px;padding:13px 15px;overflow-x:auto}
+  pre .k{color:#93C7F1} pre .s{color:#F2B296} pre .n{color:#A9D9A9} pre .c{color:#8A8272}
+  .api-note{font-size:11.8px;color:var(--muted);margin-top:8px}
+  .api-note b{color:var(--ink)}
+
+  /* ============ tables (xpaths, sheet) ============ */
+  table.wide{width:100%;border-collapse:collapse;font-size:12.4px;background:#fff}
+  table.wide th,table.wide td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  table.wide th{background:#F5F2E9;font-size:10.8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  table.wide td code{background:transparent;border:0;padding:0}
+  .field-chip{font-weight:700;white-space:nowrap}
+  .field-chip.y{color:var(--indigo)} .field-chip.w{color:var(--teal)}
+  .field-chip.s{color:var(--orange)} .field-chip.r{color:var(--blue)}
+
+  .sheet{border-collapse:collapse;font-size:12.4px;background:#fff;width:100%}
+  .sheet th,.sheet td{border:1px solid #D5DBE3;padding:5px 12px;text-align:left}
+  .sheet thead th{background:#EEF1F5;color:#3C4657;font-size:11px;text-transform:none;font-family:var(--mono);text-align:center}
+  .sheet td.rn{background:#EEF1F5;color:#3C4657;font-family:var(--mono);font-size:11px;text-align:center;width:36px}
+  .sheet tr.hdr td:not(.rn){background:#FBF4E4;font-weight:700}
+  .sheet td.num{font-variant-numeric:tabular-nums}
+  .fine{font-size:11.5px;color:var(--muted);margin-top:8px}
+  .fine b{color:var(--ink)}
+
+  /* ============ edge cases ============ */
+  .edge-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .edge{padding:12px 14px}
+  .edge h4{font-size:13px;margin-bottom:4px;display:flex;gap:8px;align-items:baseline}
+  .edge h4 .n{font-family:var(--mono);color:var(--orange);font-size:11.5px;font-weight:700}
+  .edge p{font-size:12.2px;color:var(--muted)}
+  .edge p code{font-size:10.8px}
+
+  /* ============ coverage ============ */
+  table.cov{width:100%;border-collapse:collapse;font-size:12.4px;background:#fff}
+  table.cov th,table.cov td{border:1px solid var(--line);padding:6px 10px;text-align:left}
+  table.cov th{background:#F5F2E9;font-size:10.8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  .yes{color:var(--green);font-weight:700} .no{color:var(--faint);font-weight:600}
+
+  footer{margin-top:46px;border-top:3px solid var(--ink);padding-top:14px;
+    display:flex;justify-content:space-between;gap:20px;font-size:11.8px;color:var(--muted)}
+
+  @page{size:A3 portrait;margin:9mm}
+  @media print{
+    .page{max-width:1080px;padding:20px 10px}
+    .card,.node,.loop{box-shadow:none}
+    .node,.card,.setup,.term,.branching,table.wide,table.sheet,table.cov,.final-chip{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ================= MASTHEAD ================= -->
+  <header class="masthead">
+    <div class="kicker">Tennr · Implementation Engineer · Take-Home Assignment</div>
+    <h1>Wikipedia <span class="arrow">→</span> Google Sheets</h1>
+    <p class="subtitle">An RPA workflow that extracts <b>Year, Winner, Score, Runners-up</b> from the first
+      10 rows of the <i>“List of FIFA World Cup finals”</i> table and appends each row to a Google Sheet
+      via the Google Sheets API (configured exactly as a Postman request) — built <b>exclusively from the
+      9 steps in the provided IE Step Library</b>.</p>
+    <div class="meta-row">
+      <div><b>Candidate</b> · Bhunesh Bansal</div>
+      <div><b>Date</b> · 7 July 2026</div>
+      <div><b>Source</b> · en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals</div>
+      <div><b>Target</b> · Google Sheet — tab <span style="font-family:var(--mono)">Sheet1</span>, columns A:D</div>
+    </div>
+  </header>
+
+  <!-- ================= LEGEND ================= -->
+  <section>
+    <div class="sec-head"><span class="sec-letter">A</span><span class="sec-title">Reading guide — the Step Library</span></div>
+    <p class="sec-sub">Every executable node below is one of the library’s 9 steps (color-coded).
+      Steps the task does not need are accounted for, with the reason.</p>
+    <div class="legend">
+      <div class="card lg"><span class="swatch" style="background:var(--orange)"></span>
+        <div><b>Open page</b><span>starts the RPA browsing session</span><span class="use yes">used ×1</span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--indigo)"></span>
+        <div><b>Loop</b><span>fixed-count iteration, index from 1</span><span class="use yes">used ×1 (10 iterations)</span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--teal)"></span>
+        <div><b>ExtractHTML</b><span>DOM path in → element text out</span><span class="use yes">used ×4 per iteration</span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--teal)"></span>
+        <div><b>Parse number</b><span>numeric string → Int</span><span class="use yes">used ×1 per iteration</span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--amber)"></span>
+        <div><b>Detour</b><span>“if” — run branch when true, then resume</span><span class="use yes">used ×1 per iteration</span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--blue)"></span>
+        <div><b>Call API</b><span>configured exactly like Postman</span><span class="use yes">used ×1 per iteration (+1 optional QA)</span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--gray)"></span>
+        <div><b>Fill text field</b><span>types into an input</span><span class="use">not needed — read-only page, nothing to type</span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--gray)"></span>
+        <div><b>Click</b><span>simulated mouse click</span><span class="use">deliberately avoided — clicking a column header would re-sort rows and scramble <span style="font-family:var(--mono)">tr[index]</span></span></div></div>
+      <div class="card lg"><span class="swatch" style="background:var(--gray)"></span>
+        <div><b>Check Box</b><span>toggles a checkbox</span><span class="use">not needed — page has no checkboxes</span></div></div>
+    </div>
+  </section>
+
+  <!-- ================= SETUP ================= -->
+  <section>
+    <div class="sec-head"><span class="sec-letter">B</span><span class="sec-title">One-time setup (before the workflow runs)</span></div>
+    <p class="sec-sub">Preconditions only — these are <b>not</b> workflow steps and use nothing from the Step Library.</p>
+    <div class="setup">
+      <div class="setup-tag">Prepared once, reused on every run</div>
+      <div class="setup-grid">
+        <div class="setup-card"><h4><em>S1</em>Target spreadsheet</h4>
+          <p>Create a Google Sheet (or convert the uploaded Excel file to Google Sheets format — the API can only write to native Sheets). Tab <code>Sheet1</code>; headers <code>Year | Winner | Score | Runners-up</code> in A1:D1. Copy the <b>spreadsheetId</b> from the URL between <code>/d/</code> and <code>/edit</code>.</p></div>
+        <div class="setup-card"><h4><em>S2</em>Google Cloud</h4>
+          <p>Create a project → enable the <b>Google Sheets API</b> → create OAuth 2.0 client credentials (the sheet’s owner account must grant access).</p></div>
+        <div class="setup-card"><h4><em>S3</em>Postman auth</h4>
+          <p>OAuth 2.0 (Authorization Code) → obtain <code>{{ACCESS_TOKEN}}</code> with scope <code>…/auth/spreadsheets</code>. Full config in panel D.</p></div>
+        <div class="setup-card"><h4><em>S4</em>Capture DOM paths</h4>
+          <p>Per the resource video: DevTools → Inspect element → right-click the node → <b>Copy → Copy XPath</b>. Replace the row number with <code>{{index}}</code>. Paths verified in panel E.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FLOWCHART ================= -->
+  <section>
+    <div class="sec-head"><span class="sec-letter">C</span><span class="sec-title">The workflow — flowchart</span></div>
+    <p class="sec-sub">One straight spine: open the page, loop over the 10 finals rows, and inside every iteration
+      extract 4 fields, type-check the year, guard with a Detour, and append the row via one API call.
+      Loop index <span style="font-family:var(--mono)">i</span> does triple duty:
+      iteration counter ↔ table row <span style="font-family:var(--mono)">tbody/tr[i]</span> ↔ sheet row <span style="font-family:var(--mono)">i+1</span>.</p>
+
+    <div class="flow">
+
+      <div class="term">START</div>
+
+      <div class="connector"><div class="stem"></div><div class="head"></div></div>
+
+      <!-- 1 OPEN PAGE -->
+      <div class="node orange">
+        <div class="node-top"><span class="num">1</span><span class="node-title">Open the source page</span>
+          <span class="badge orange">Open page</span></div>
+        <p class="purpose">Begins the RPA browsing session (per library note) and loads the article that hosts the target table.</p>
+        <dl class="io">
+          <dt>Input</dt><dd><code>https://en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals</code>
+            <div class="ex">Page URL — the only required input.</div></dd>
+          <dt>Output</dt><dd><div class="ex">Live browser session with the page fully rendered.
+            Once the sortable table initialises, its header row moves into <b>&lt;thead&gt;</b>, so data rows are
+            <b>tbody/tr[1] … tbody/tr[22]</b> — row 1 = the 1930 final.</div></dd>
+        </dl>
+        <div class="note"><b>Keep default (chronological) sort.</b> No clicks on column headers — sorting re-orders
+          <code>tr</code> indices and would corrupt the extraction. The table renders on page load; no interaction is needed.</div>
+      </div>
+
+      <div class="connector tall"><div class="stem"></div><div class="head"></div><span class="lbl">page ready</span></div>
+
+      <!-- 2 LOOP -->
+      <div class="loop">
+        <div class="loop-return"></div>
+        <div class="loop-return-lbl">next index · i ≤ 10 · repeat ↺</div>
+
+        <div class="loop-head"><span class="num">2</span><span class="node-title">Loop — once per finals row</span>
+          <span class="badge indigo">Loop</span></div>
+        <div class="loop-io"><b>Input:</b> number of iterations = <b>10</b>&nbsp;&nbsp;·&nbsp;&nbsp;<b>Output:</b> index <code>i</code> = 1, 2, … 10 (library: index starts from 1)</div>
+        <div class="loop-chips">
+          <span class="chip">i = 1 → 1930 … i = 10 → 1974</span>
+          <span class="chip">error inside an iteration ⇒ run continues at next index (library note)</span>
+          <span class="chip">rows are processed top-to-bottom, so sheet order = table order</span>
+        </div>
+
+        <!-- 2.1 -->
+        <div class="node teal">
+          <div class="node-top"><span class="num">2.1</span><span class="node-title">Extract “Year”</span>
+            <span class="badge teal">ExtractHTML</span></div>
+          <dl class="io">
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/th/a</code>
+              <div class="ex">Element DOM path (XPath) — year link inside the row-header cell.</div></dd>
+            <dt>Output</dt><dd><div class="ex">Text → <code>year_text</code> &nbsp; e.g. i=1 → <b>"1930"</b></div></dd>
+          </dl>
+        </div>
+        <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
+
+        <!-- 2.2 -->
+        <div class="node teal">
+          <div class="node-top"><span class="num">2.2</span><span class="node-title">Convert year to a number</span>
+            <span class="badge teal">Parse number</span></div>
+          <dl class="io">
+            <dt>Input</dt><dd><code>year_text</code> <div class="ex">String, e.g. <b>"1930"</b></div></dd>
+            <dt>Output</dt><dd><code>year</code> <div class="ex">Int, e.g. <b>1930</b> — lands in column A as a true number, not text.</div></dd>
+          </dl>
+          <div class="note"><b>Free row-guard:</b> if markup ever shifts and a non-numeric string is extracted,
+            this step errors → the Loop skips to the next index (library behaviour). Bad rows can never reach the sheet.</div>
+        </div>
+        <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
+
+        <!-- 2.3 -->
+        <div class="node teal">
+          <div class="node-top"><span class="num">2.3</span><span class="node-title">Extract “Winner”</span>
+            <span class="badge teal">ExtractHTML</span></div>
+          <dl class="io">
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[1]/a</code>
+              <div class="ex">Anchor text = clean country name (skips the flag-icon span in the same cell).</div></dd>
+            <dt>Output</dt><dd><div class="ex">Text → <code>winner</code> &nbsp; e.g. i=1 → <b>"Uruguay"</b></div></dd>
+          </dl>
+        </div>
+        <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
+
+        <!-- 2.4 -->
+        <div class="node teal">
+          <div class="node-top"><span class="num">2.4</span><span class="node-title">Extract “Score”</span>
+            <span class="badge teal">ExtractHTML</span></div>
+          <dl class="io">
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[2]</code>
+              <div class="ex">Whole cell — keeps the “(a.e.t.)” qualifier where a final went to extra time (1934, 1966).</div></dd>
+            <dt>Output</dt><dd><div class="ex">Text → <code>score</code> &nbsp; e.g. i=1 → <b>"4–2"</b>, i=2 → <b>"2–1 (a.e.t.)"</b></div></dd>
+          </dl>
+          <div class="note">Scores use an <b>en dash (–, U+2013)</b>, not a hyphen. Row 4 (1950) carries a footnote
+            marker in the same cell — see edge case <span class="qbadge">#3</span>.</div>
+        </div>
+        <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
+
+        <!-- 2.5 -->
+        <div class="node teal">
+          <div class="node-top"><span class="num">2.5</span><span class="node-title">Extract “Runners-up”</span>
+            <span class="badge teal">ExtractHTML</span></div>
+          <dl class="io">
+            <dt>Input</dt><dd><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[3]/a</code>
+              <div class="ex">Anchor text = clean country name.</div></dd>
+            <dt>Output</dt><dd><div class="ex">Text → <code>runners_up</code> &nbsp; e.g. i=1 → <b>"Argentina"</b></div></dd>
+          </dl>
+        </div>
+        <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
+
+        <!-- 2.6 DETOUR -->
+        <div class="node amber" style="clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px)">
+          <div class="node-top"><span class="num">2.6</span><span class="node-title">◇ Append guard — is the row complete?</span>
+            <span class="badge amber">Detour</span></div>
+          <p class="purpose">Library: “conditional execution like an ‘if’ statement; if true, run branch then resume the run.” One branch, one condition.</p>
+          <dl class="io">
+            <dt>Input</dt><dd><code>winner ≠ "" AND score ≠ "" AND runners_up ≠ ""</code>
+              <div class="ex">(<code>year</code> is already validated by step 2.2.) Guards against a silent partial extraction.</div></dd>
+            <dt>Output</dt><dd><div class="ex">true → branch executes (2.7), then the run resumes · false → branch skipped, loop moves on</div></dd>
+          </dl>
+        </div>
+
+        <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
+
+        <!-- branch -->
+        <div class="branching">
+          <div class="branch-false">
+            <span class="tag">condition FALSE</span>
+            <p>Branch does not run. Nothing is appended — <b>no partial rows ever reach the sheet</b>.</p>
+            <p>Run resumes → next index.</p>
+          </div>
+          <div class="branch-true">
+            <span class="tag">condition TRUE → run branch</span>
+            <div class="node blue">
+              <div class="node-top"><span class="num">2.7</span><span class="node-title">Append this row to Google Sheets</span>
+                <span class="badge blue">Call API</span></div>
+              <p class="purpose">One POST per row, configured exactly as a Postman request — full spec in panel D.</p>
+              <dl class="io">
+                <dt>Input</dt><dd><code>POST …/values/Sheet1!A:D:append</code>
+                  <div class="ex">Body → <code>"values": [[ {{year}}, "{{winner}}", "{{score}}", "{{runners_up}}" ]]</code></div>
+                  <div class="ex">e.g. i=1 → <b>[[1930, "Uruguay", "4–2", "Argentina"]]</b></div></dd>
+                <dt>Output</dt><dd><div class="ex">HTTP 200 · <code>updates.updatedRange = "Sheet1!A{{index+1}}:D{{index+1}}"</code> (i=1 → A2:D2)</div></dd>
+              </dl>
+              <div class="note">If the call fails (401/429/network), the iteration errors and the Loop
+                <b>skips to the next index</b> — one bad row never blocks the other nine.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="converge">both paths converge → run resumes → Loop advances to next index</div>
+
+        <div class="loop-exit">after iteration 10 → exit loop ▼</div>
+      </div>
+
+      <div class="connector tall"><div class="stem"></div><div class="head"></div><span class="lbl">all rows processed</span></div>
+
+      <!-- 3 VERIFY -->
+      <div class="node blue dashed">
+        <div class="node-top"><span class="num">3</span><span class="node-title">Verify the write <span style="font-weight:500;color:var(--muted)">(optional QA — recommended)</span></span>
+          <span class="badge blue">Call API</span></div>
+        <dl class="io">
+          <dt>Input</dt><dd><code>GET https://sheets.googleapis.com/v4/spreadsheets/{{SPREADSHEET_ID}}/values/Sheet1!A:D</code></dd>
+          <dt>Output</dt><dd><div class="ex">200 with <code>values</code> array of <b>11 rows</b> (1 header + 10 data) — confirms every append landed.</div></dd>
+        </dl>
+      </div>
+
+      <div class="connector"><div class="stem"></div><div class="head"></div></div>
+
+      <div class="term end">END</div>
+      <div class="final-chip">Final state: Sheet1!A2:D11 = the first 10 FIFA World Cup finals, 1930 → 1974 (full data in panel F)</div>
+    </div>
+  </section>
+
+  <!-- ================= API ================= -->
+  <section>
+    <div class="sec-head"><span class="sec-letter">D</span><span class="sec-title">The API call — Google Sheets <span style="font-family:var(--mono);font-size:15px">values:append</span> via Postman</span></div>
+    <p class="sec-sub">Exact configuration for step 2.7. Everything in <span style="font-family:var(--mono)">{{double_braces}}</span> is a Postman/workflow variable.</p>
+
+    <div class="card api">
+      <div class="api-line">
+        <span class="method">POST</span>
+        <span class="url">https://sheets.googleapis.com/v4/spreadsheets/<i>{{SPREADSHEET_ID}}</i>/values/<i>{{RANGE}}</i>:append</span>
+      </div>
+      <div class="api-body">
+        <div class="api-col">
+          <h4>Path variables</h4>
+          <table class="kv">
+            <tr><th style="width:34%">Variable</th><th>Value / where it comes from</th></tr>
+            <tr><td><code>SPREADSHEET_ID</code></td><td>From the sheet URL: <code>docs.google.com/spreadsheets/d/<b>&lt;this&gt;</b>/edit</code></td></tr>
+            <tr><td><code>RANGE</code></td><td><code>Sheet1!A:D</code> — the table to append to (Postman URL-encodes <code>!</code> and <code>:</code> automatically)</td></tr>
+          </table>
+
+          <h4>Query parameters</h4>
+          <table class="kv">
+            <tr><th style="width:44%">Param</th><th>Why</th></tr>
+            <tr><td><code>valueInputOption=RAW</code></td><td class="why">Write values literally. <code>USER_ENTERED</code> would let Sheets re-interpret strings (dash-separated scores can coerce to dates); RAW is deterministic.</td></tr>
+            <tr><td><code>insertDataOption=INSERT_ROWS</code></td><td class="why">Always add new rows below the existing table — never overwrite.</td></tr>
+            <tr><td><code>includeValuesInResponse=true</code></td><td class="why">Optional: response echoes what was written — instant per-row verification.</td></tr>
+          </table>
+
+          <h4>Headers</h4>
+          <table class="kv">
+            <tr><td><code>Content-Type</code></td><td><code>application/json</code></td></tr>
+            <tr><td><code>Authorization</code></td><td><code>Bearer {{ACCESS_TOKEN}}</code> (set automatically by Postman’s OAuth 2.0 helper)</td></tr>
+          </table>
+
+          <h4>Auth — Postman OAuth 2.0 (Authorization Code)</h4>
+          <table class="kv">
+            <tr><td>Auth URL</td><td><code>https://accounts.google.com/o/oauth2/v2/auth</code></td></tr>
+            <tr><td>Token URL</td><td><code>https://oauth2.googleapis.com/token</code></td></tr>
+            <tr><td>Scope</td><td><code>https://www.googleapis.com/auth/spreadsheets</code></td></tr>
+            <tr><td>Callback</td><td><code>https://oauth.pstmn.io/v1/callback</code></td></tr>
+          </table>
+        </div>
+
+        <div class="api-col">
+          <h4>Request body — template (iteration i)</h4>
+<pre>{
+  <span class="k">"range"</span>: <span class="s">"Sheet1!A:D"</span>,
+  <span class="k">"majorDimension"</span>: <span class="s">"ROWS"</span>,
+  <span class="k">"values"</span>: [
+    [ <span class="n">{{year}}</span>, <span class="s">"{{winner}}"</span>, <span class="s">"{{score}}"</span>, <span class="s">"{{runners_up}}"</span> ]
+  ]
+}</pre>
+          <h4>Concrete example — iteration 1</h4>
+<pre>{
+  <span class="k">"range"</span>: <span class="s">"Sheet1!A:D"</span>,
+  <span class="k">"majorDimension"</span>: <span class="s">"ROWS"</span>,
+  <span class="k">"values"</span>: [
+    [ <span class="n">1930</span>, <span class="s">"Uruguay"</span>, <span class="s">"4–2"</span>, <span class="s">"Argentina"</span> ]
+  ]
+}</pre>
+          <h4>Success response — 200 OK (iteration 1)</h4>
+<pre>{
+  <span class="k">"spreadsheetId"</span>: <span class="s">"{{SPREADSHEET_ID}}"</span>,
+  <span class="k">"tableRange"</span>: <span class="s">"Sheet1!A1:D1"</span>,
+  <span class="k">"updates"</span>: {
+    <span class="k">"updatedRange"</span>: <span class="s">"Sheet1!A2:D2"</span>,
+    <span class="k">"updatedRows"</span>: <span class="n">1</span>,
+    <span class="k">"updatedColumns"</span>: <span class="n">4</span>,
+    <span class="k">"updatedCells"</span>: <span class="n">4</span>
+  }
+}</pre>
+          <h4>Failure modes</h4>
+          <table class="kv">
+            <tr><td><code>401</code></td><td class="why">Token expired → refresh in Postman (Get New Access Token).</td></tr>
+            <tr><td><code>403</code></td><td class="why">Sheets API not enabled, or account lacks edit access to the sheet.</td></tr>
+            <tr><td><code>404</code></td><td class="why">Wrong <code>SPREADSHEET_ID</code>.</td></tr>
+            <tr><td><code>429</code></td><td class="why">Quota (60 write req/min/user). 10 sequential appends sit far below it.</td></tr>
+          </table>
+          <p class="api-note"><b>Inside the Loop, any failure only skips that row</b> (library note) — remaining iterations still append. <code>:append</code> is <b>not idempotent</b>: re-running the workflow duplicates rows, so clear A2:D11 before a re-run.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= XPATHS ================= -->
+  <section>
+    <div class="sec-head"><span class="sec-letter">E</span><span class="sec-title">DOM paths — captured &amp; verified</span></div>
+    <p class="sec-sub">Method from the resource video: Inspect the element → right-click it in the Elements panel →
+      <b>Copy → Copy XPath</b> → replace the row number with <span style="font-family:var(--mono)">{{index}}</span>.
+      All four paths verified against the live page on 7 July 2026.</p>
+
+    <table class="wide">
+      <tr><th style="width:96px">Field</th><th>XPath template (input to ExtractHTML)</th><th style="width:170px">Output @ i = 1</th></tr>
+      <tr><td class="field-chip y">Year</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/th/a</code></td><td><code>"1930"</code></td></tr>
+      <tr><td class="field-chip w">Winner</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[1]/a</code></td><td><code>"Uruguay"</code></td></tr>
+      <tr><td class="field-chip s">Score</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[2]</code></td><td><code>"4–2"</code></td></tr>
+      <tr><td class="field-chip r">Runners-up</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}]/td[3]/a</code></td><td><code>"Argentina"</code></td></tr>
+    </table>
+    <p class="fine"><b>Prefix drift, handled:</b> the resource video (recorded May 2024) copies
+      <code>//*[@id="mw-content-text"]/div[1]/table[4]/…</code>. Wikipedia has since moved to section-wrapped markup,
+      so the same click today yields the prefix above. Only the prefix drifts — the row/cell tail
+      <code>tbody/tr[{{index}}]/th|td[n]</code> is stable. Re-copy the prefix at build time exactly as the video shows.
+      &nbsp;<b>Row indexing:</b> in a live session the sortable table moves its header row into <code>&lt;thead&gt;</code>
+      (visible in the video), so <code>tbody/tr[i]</code> is the i-th <i>data</i> row; in raw no-JS HTML it would be <code>tr[i+1]</code>.</p>
+  </section>
+
+  <!-- ================= EXPECTED RESULT ================= -->
+  <section>
+    <div class="sec-head"><span class="sec-letter">F</span><span class="sec-title">Expected result — the sheet after the run</span></div>
+    <p class="sec-sub">Real values from the live table (not placeholders). The first 10 rows span 1930–1974:
+      Wikipedia lists no rows for 1942/1946 (tournaments cancelled, WWII), so a fixed loop bound of 10 is exact.</p>
+    <table class="sheet">
+      <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead>
+      <tbody>
+        <tr class="hdr"><td class="rn">1</td><td>Year</td><td>Winner</td><td>Score</td><td>Runners-up</td></tr>
+        <tr><td class="rn">2</td><td class="num">1930</td><td>Uruguay</td><td>4–2</td><td>Argentina</td></tr>
+        <tr><td class="rn">3</td><td class="num">1934</td><td>Italy</td><td>2–1 (a.e.t.)</td><td>Czechoslovakia</td></tr>
+        <tr><td class="rn">4</td><td class="num">1938</td><td>Italy</td><td>4–2</td><td>Hungary</td></tr>
+        <tr><td class="rn">5</td><td class="num">1950</td><td>Uruguay</td><td>2–1 <span style="color:var(--muted)">[n 3]</span></td><td>Brazil</td></tr>
+        <tr><td class="rn">6</td><td class="num">1954</td><td>West Germany</td><td>3–2</td><td>Hungary</td></tr>
+        <tr><td class="rn">7</td><td class="num">1958</td><td>Brazil</td><td>5–2</td><td>Sweden</td></tr>
+        <tr><td class="rn">8</td><td class="num">1962</td><td>Brazil</td><td>3–1</td><td>Czechoslovakia</td></tr>
+        <tr><td class="rn">9</td><td class="num">1966</td><td>England</td><td>4–2 (a.e.t.)</td><td>West Germany</td></tr>
+        <tr><td class="rn">10</td><td class="num">1970</td><td>Brazil</td><td>4–1</td><td>Italy</td></tr>
+        <tr><td class="rn">11</td><td class="num">1974</td><td>West Germany</td><td>2–1</td><td>Netherlands</td></tr>
+      </tbody>
+    </table>
+    <p class="fine">Row 5’s score keeps Wikipedia’s footnote marker <b>[n 3]</b> (the 1950 “final” was the deciding
+      match of a round-robin group) — see edge case #3 for the trade-off and the cleaner alternative.</p>
+  </section>
+
+  <!-- ================= EDGE CASES ================= -->
+  <section>
+    <div class="sec-head"><span class="sec-letter">G</span><span class="sec-title">Edge cases &amp; design decisions</span></div>
+    <div class="edge-grid">
+      <div class="card edge"><h4><span class="n">#1</span>“First 10 rows” ≠ “first 10 World Cups by year”</h4>
+        <p>1942 and 1946 were cancelled and have no table rows, so rows 1–10 cleanly map to 1930–1974. The loop bound of 10 needs no gap-handling.</p></div>
+      <div class="card edge"><h4><span class="n">#2</span>Append per row, not one batch call</h4>
+        <p>The library has no accumulator step to build a 10-row array across iterations, and per-row appends pair perfectly with the Loop’s skip-on-error rule: one bad row costs one row, not the whole write. 10 sequential calls sit far under the 60 write-req/min quota.</p></div>
+      <div class="card edge"><h4><span class="n">#3</span>The 1950 footnote marker</h4>
+        <p>Row 4’s score cell embeds a superscript note → cell text is <code>2–1[n 3]</code>. Chosen: extract the whole cell (keeps “(a.e.t.)” on rows 2 &amp; 8) and accept the marker. Alternative: point ExtractHTML at <code>…/td[2]/a</code> for a pure <code>2–1</code> — at the cost of dropping “(a.e.t.)”.</p></div>
+      <div class="card edge"><h4><span class="n">#4</span>Scores contain an en dash</h4>
+        <p><code>4–2</code> uses U+2013, not a hyphen. With <code>valueInputOption=RAW</code> the string is stored verbatim; no risk of Sheets coercing a dash-separated pair into a date.</p></div>
+      <div class="card edge"><h4><span class="n">#5</span>XPaths drift; the method doesn’t</h4>
+        <p>Wikipedia’s wrapper markup changed between the resource video (May 2024: <code>div[1]/table[4]</code>) and today (<code>div[2]/section[2]/table[3]</code>). The workflow stores the prefix as one variable so a future drift is a one-field fix; the <code>tr[{{index}}]</code> tail is stable.</p></div>
+      <div class="card edge"><h4><span class="n">#6</span>Never sort before extracting</h4>
+        <p>The table is user-sortable; clicking a header re-orders <code>&lt;tr&gt;</code> elements and would silently remap every index. The workflow performs zero clicks — extraction happens on the default chronological order.</p></div>
+      <div class="card edge"><h4><span class="n">#7</span>Year as a real number</h4>
+        <p><b>Parse number</b> converts <code>"1930"</code> → <code>1930</code> so column A is sortable/filterable as numeric in Sheets — and doubles as a validity check on every row (parse failure ⇒ loop skips that index).</p></div>
+      <div class="card edge"><h4><span class="n">#8</span>Re-runs are not idempotent</h4>
+        <p><code>:append</code> always adds rows; running the workflow twice writes 20 rows. Clear <code>Sheet1!A2:D11</code> before a re-run (or point <code>RANGE</code> at a scratch tab while testing).</p></div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer>
+    <div><b style="color:var(--ink)">Verification.</b> Every XPath was round-trip-tested against the live page HTML
+      and all 10 expected rows extracted programmatically on 7 Jul 2026; API shapes match the official
+      <span style="font-family:var(--mono)">spreadsheets.values.append</span> reference.</div>
+    <div style="white-space:nowrap;text-align:right"><b style="color:var(--ink)">Bhunesh Bansal</b><br>Implementation Engineer take-home · Tennr</div>
+  </footer>
+
+</div>
+</body>
+</html>
