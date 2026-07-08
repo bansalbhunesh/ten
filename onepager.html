@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wikipedia → Google Sheets · One-Page Summary · Tennr IE</title>
+<style>
+  :root{
+    --paper:#EFF3F5; --card:#FFFFFF; --ink:#16222E; --muted:#556472; --faint:#8796A4;
+    --line:#DFE6EC; --line-strong:#C3CFD9;
+    --orange:#C0492A; --orange-t:#FAEAE4; --orange-b:#EBB7A3;
+    --teal:#0B6E77;  --teal-t:#E0EFF1;   --teal-b:#93C8CD;
+    --indigo:#443EAF;--indigo-t:#ECEBF8; --indigo-b:#B7B3E8;
+    --blue:#1C59BE;  --blue-t:#E5EDFA;   --blue-b:#A4C1EB;
+    --amber:#8F5D0C; --amber-t:#F6EED7;  --amber-b:#DEBE86;
+    --green:#137A45; --green-t:#DFEFE8;  --green-b:#96CAAC;
+    --gray:#5A6672;  --gray-t:#EBF0F3;   --gray-b:#C2CCD6;
+    --mono:"Cascadia Code","Consolas",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper)}
+  body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,"Inter",Roboto,sans-serif;
+    color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.4}
+  .sheet{width:1240px;margin:0 auto;padding:26px 30px 22px}
+
+  /* header */
+  .top{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2.5px solid var(--ink);padding-bottom:12px;margin-bottom:14px}
+  .kicker{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--teal);font-weight:700}
+  h1{font-size:25px;font-weight:750;letter-spacing:-.015em;margin-top:3px}
+  h1 .a{color:var(--teal)}
+  .sub{font-size:12px;color:var(--muted);margin-top:4px;max-width:78ch}
+  .who{text-align:right;font-size:11px;color:var(--muted);white-space:nowrap;line-height:1.5}
+  .who b{color:var(--ink)}
+  .tag{display:inline-block;font-size:9.5px;font-weight:700;font-family:var(--mono);
+    padding:2px 8px;border-radius:99px;border:1px solid var(--green-b);background:var(--green-t);color:var(--green);margin-top:6px}
+
+  /* minimap */
+  .flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;background:var(--card);
+    border:1px solid var(--line);border-radius:11px;padding:9px 13px;margin-bottom:14px}
+  .n{font-size:11px;font-weight:650;padding:3px 10px;border-radius:99px;border:1px solid;white-space:nowrap}
+  .n.s{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+  .n.e{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
+  .n.o{color:var(--orange);background:var(--orange-t);border-color:var(--orange-b)}
+  .n.t{color:var(--teal);background:var(--teal-t);border-color:var(--teal-b)}
+  .n.m{color:var(--amber);background:var(--amber-t);border-color:var(--amber-b)}
+  .n.b{color:var(--blue);background:var(--blue-t);border-color:var(--blue-b)}
+  .ar{color:var(--faint);font-size:11px}
+  .lp{display:flex;align-items:center;gap:6px;border:1.4px dashed var(--indigo-b);
+    border-radius:99px;padding:4px 11px;background:var(--indigo-t)}
+  .lp .lt{font-size:9.5px;font-weight:700;font-family:var(--mono);color:var(--indigo);white-space:nowrap}
+
+  /* two columns */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .col{display:flex;flex-direction:column;gap:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .card h3{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:8px;
+    display:flex;justify-content:space-between;align-items:baseline}
+  .card h3 .v{color:var(--green);font-family:var(--mono);font-size:10px;letter-spacing:0}
+  code{font-family:var(--mono);font-size:10.5px;background:var(--gray-t);border:1px solid var(--line);
+    border-radius:4px;padding:1px 5px;overflow-wrap:anywhere}
+
+  .base{font-size:10.5px;color:var(--muted);margin-bottom:8px;display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:center}
+  .base b{color:var(--ink);font-weight:650;white-space:nowrap}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th,td{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:middle}
+  th{background:var(--gray-t);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  td code{background:transparent;border:0;padding:0;font-size:10.5px}
+  .fld{font-weight:700}
+  .fld.y{color:var(--indigo)} .fld.w{color:var(--teal)} .fld.s{color:var(--orange)} .fld.r{color:var(--blue)}
+  .out{color:var(--muted)}
+
+  .note{font-size:10px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .note b{color:var(--ink)}
+
+  /* API */
+  .api .post{background:var(--ink);color:#EDE8DC;border-radius:8px;padding:9px 11px;font-family:var(--mono);font-size:10px;line-height:1.55;overflow-x:auto}
+  .api .post .m{background:var(--blue);color:#fff;font-weight:700;padding:1px 7px;border-radius:5px;margin-right:6px}
+  .api .post i{font-style:normal;color:#F2B296}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:10.5px;margin-top:8px}
+  .kv .k{color:var(--faint);font-weight:700;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;padding-top:1px}
+  pre{font-family:var(--mono);font-size:10px;line-height:1.5;background:#152230;color:#EFE9DA;border-radius:7px;padding:9px 11px;margin-top:8px;overflow-x:auto}
+  pre .k{color:#93C7F1} pre .st{color:#F2B296} pre .nu{color:#A9D9A9}
+  .resp{font-size:10.5px;color:var(--muted);margin-top:7px}
+  .resp code{font-size:10px}
+
+  /* result sheet */
+  .rs{width:100%;border-collapse:collapse;font-size:10.5px}
+  .rs th,.rs td{border:1px solid #D5DBE3;padding:3px 9px}
+  .rs thead th{background:#EAEFF3;color:#3C4657;font-family:var(--mono);font-size:10px;text-align:center;text-transform:none}
+  .rs td.rn{background:#EAEFF3;color:#3C4657;font-family:var(--mono);font-size:9.5px;text-align:center;width:26px}
+  .rs tr.h td:not(.rn){background:#E9F1FB;font-weight:700}
+  .rs td.yr{font-variant-numeric:tabular-nums;color:var(--indigo);font-weight:600}
+
+  footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;
+    border-top:2px solid var(--ink);padding-top:9px;font-size:10.5px;color:var(--muted)}
+  footer b{color:var(--ink)}
+  footer a{color:var(--blue);text-decoration:none;font-weight:600}
+
+  @page{size:A4 landscape;margin:0}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <div class="kicker">Tennr · Implementation Engineer · Take-Home — one-page summary</div>
+      <h1>Wikipedia <span class="a">→</span> Google Sheets</h1>
+      <p class="sub">Extract Year / Winner / Score / Runners-up from the first 10 rows of the FIFA World Cup finals table
+        and append each row to Google Sheets via the Sheets API — using only the 9-step IE Step Library.</p>
+    </div>
+    <div class="who"><b>Bhunesh Bansal</b><br>8 July 2026<br><span class="tag">selectors 80/80 live-verified</span></div>
+  </div>
+
+  <div class="flow">
+    <span class="n s">START</span><span class="ar">→</span>
+    <span class="n o">1 · Open page</span><span class="ar">→</span>
+    <span class="lp"><span class="lt">2 · LOOP ×10</span>
+      <span class="n t">2.1–2.5 · ExtractHTML ×4 + Parse number</span><span class="ar">→</span>
+      <span class="n m">2.6 · Detour</span><span class="ar">→</span>
+      <span class="n b">2.7 · Call API (append row)</span></span><span class="ar">→</span>
+    <span class="n b" style="border-style:dashed">3 · Verify</span><span class="ar">→</span>
+    <span class="n e">END</span>
+  </div>
+
+  <div class="cols">
+    <!-- LEFT -->
+    <div class="col">
+      <div class="card">
+        <h3>Extraction — DOM paths <span class="v">XPath 40/40 · CSS 40/40</span></h3>
+        <div class="base">
+          <b>Row base (XPath)</b><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/</code>
+          <b>Row base (CSS)</b><code>table.sortable.plainrowheaders.sticky-header &gt; tbody &gt; tr:nth-child({{index+1}}) &gt;</code>
+        </div>
+        <table>
+          <tr><th style="width:76px">Field → var</th><th>XPath tail</th><th>CSS tail</th><th style="width:78px">Out @ i=1</th></tr>
+          <tr><td class="fld y">Year</td><td><code>th/a</code></td><td><code>th a</code></td><td class="out">1930</td></tr>
+          <tr><td class="fld w">Winner</td><td><code>td[1]</code></td><td><code>td:nth-child(2)</code></td><td class="out">Uruguay</td></tr>
+          <tr><td class="fld s">Score</td><td><code>td[2]</code></td><td><code>td:nth-child(3)</code></td><td class="out">4–2</td></tr>
+          <tr><td class="fld r">Runners-up</td><td><code>td[3]</code></td><td><code>td:nth-child(4)</code></td><td class="out">Argentina</td></tr>
+        </table>
+        <p class="note"><b>Loop index</b> maps 1:1 → table row <code>tr[i+1]</code> (row 1 is the header) → sheet row <code>i+1</code>.
+          Cells are read whole (country links are span-wrapped on some rows), then trimmed. <b>Parse number</b> casts the year and
+          acts as a row-validity gate; <b>Detour</b> appends only when all fields are non-empty; a per-row error just skips to the next index.</p>
+      </div>
+
+      <div class="card">
+        <h3>Library conformance — 6 of 9 steps, nothing else</h3>
+        <p class="note" style="margin-top:0">
+          <code>Open page</code> · <code>Loop</code> · <code>ExtractHTML</code> · <code>Parse number</code> ·
+          <code>Detour</code> · <code>Call API</code> &nbsp;— used.<br>
+          <code>Fill text field</code> · <code>Click</code> · <code>Check Box</code> — not needed (read-only page; and clicking a
+          header would re-sort the rows). Every node is a library step, unchanged.</p>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col">
+      <div class="card api">
+        <h3>The API call — Sheets <code style="font-size:10px">values.append</code> via Postman</h3>
+        <div class="post"><span class="m">POST</span>https://sheets.googleapis.com/v4/spreadsheets/<i>{{SPREADSHEET_ID}}</i>/values/Sheet1!A:D:append<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;?valueInputOption=RAW&amp;insertDataOption=INSERT_ROWS</div>
+        <div class="kv">
+          <span class="k">Headers</span><span><code>Authorization: Bearer {{ACCESS_TOKEN}}</code> · <code>Content-Type: application/json</code></span>
+          <span class="k">Auth</span><span>Postman OAuth 2.0 (Auth Code) · scope <code>.../auth/spreadsheets</code></span>
+        </div>
+<pre><span class="k">"range"</span>: <span class="st">"Sheet1!A:D"</span>, <span class="k">"majorDimension"</span>: <span class="st">"ROWS"</span>,
+<span class="k">"values"</span>: [[ <span class="nu">{{year}}</span>, <span class="st">"{{winner}}"</span>, <span class="st">"{{score}}"</span>, <span class="st">"{{runners_up}}"</span> ]]</pre>
+        <p class="resp"><b>→ 200</b> · <code>updates.updatedRange = "Sheet1!A{{index+1}}:D{{index+1}}"</code>&nbsp;
+          &nbsp;<code>RAW</code> keeps en-dash scores from becoming dates; <code>INSERT_ROWS</code> only ever adds.</p>
+      </div>
+
+      <div class="card">
+        <h3>Result — Sheet1!A2:D11 after the run</h3>
+        <table class="rs">
+          <thead><tr><th></th><th>A · Year</th><th>B · Winner</th><th>C · Score</th><th>D · Runners-up</th></tr></thead>
+          <tbody>
+            <tr class="h"><td class="rn">1</td><td>Year</td><td>Winner</td><td>Score</td><td>Runners-up</td></tr>
+            <tr><td class="rn">2</td><td class="yr">1930</td><td>Uruguay</td><td>4–2</td><td>Argentina</td></tr>
+            <tr><td class="rn">3</td><td class="yr">1934</td><td>Italy</td><td>2–1 (a.e.t.)</td><td>Czechoslovakia</td></tr>
+            <tr><td class="rn">4</td><td class="yr">1938</td><td>Italy</td><td>4–2</td><td>Hungary</td></tr>
+            <tr><td class="rn">5</td><td class="yr">1950</td><td>Uruguay</td><td>2–1</td><td>Brazil</td></tr>
+            <tr><td class="rn">6</td><td class="yr">1954</td><td>West Germany</td><td>3–2</td><td>Hungary</td></tr>
+            <tr><td class="rn">7</td><td class="yr">1958</td><td>Brazil</td><td>5–2</td><td>Sweden</td></tr>
+            <tr><td class="rn">8</td><td class="yr">1962</td><td>Brazil</td><td>3–1</td><td>Czechoslovakia</td></tr>
+            <tr><td class="rn">9</td><td class="yr">1966</td><td>England</td><td>4–2 (a.e.t.)</td><td>West Germany</td></tr>
+            <tr><td class="rn">10</td><td class="yr">1970</td><td>Brazil</td><td>4–1</td><td>Italy</td></tr>
+            <tr><td class="rn">11</td><td class="yr">1974</td><td>West Germany</td><td>2–1</td><td>Netherlands</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>Built only from the 9-step IE Step Library · every selector &amp; value verified in a live browser (80/80).</div>
+    <div>Full detailed flowchart → <a href="https://bansalbhunesh.github.io/ten/">bansalbhunesh.github.io/ten</a></div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -37,9 +37,11 @@ A single-page flowchart that takes an RPA bot from **opening the Wikipedia page*
 
 | File | What it is |
 |---|---|
-| **[`exports/flowchart.png`](exports/flowchart.png)** | The flowchart — full-resolution image (**primary deliverable**) |
+| **[`exports/flowchart.png`](exports/flowchart.png)** | The full flowchart — full-resolution image (**primary deliverable**) |
 | **[`exports/flowchart.pdf`](exports/flowchart.pdf)** | The same document as a paginated A3 PDF |
-| [`flowchart.html`](flowchart.html) | Source of the document — self-contained, opens in any browser |
+| **[`exports/onepager.pdf`](exports/onepager.pdf)** | **One-page summary** — the whole workflow on a single A4-landscape sheet (30-second read) |
+| [`exports/onepager.png`](exports/onepager.png) | The one-page summary as an image |
+| [`flowchart.html`](flowchart.html) · [`onepager.html`](onepager.html) | Sources — self-contained, open in any browser |
 | [`index.html`](index.html) | Redirect to `flowchart.html` for GitHub Pages |
 
 ## The workflow
