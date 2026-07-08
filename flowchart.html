@@ -287,6 +287,31 @@
       <div class="card lg"><span class="swatch" style="background:var(--gray)"></span>
         <div><b>Check Box</b><span>toggles a checkbox</span><span class="use">not needed — page has no checkboxes</span></div></div>
     </div>
+
+    <p style="font-weight:720;font-size:14.5px;margin:24px 0 4px">Step-library conformance — every node is a library step, unchanged</p>
+    <p class="sec-sub" style="margin-bottom:12px">Each row is quoted verbatim from the Step Guide’s <i>Required Input</i> / <i>Output</i>
+      columns, next to how this workflow uses it. Nothing invented, nothing outside the 9 steps.</p>
+    <table class="wide" style="font-size:11.9px">
+      <tr><th style="width:104px">Library step</th><th style="width:150px">Required Input (guide)</th>
+          <th style="width:120px">Output (guide)</th><th style="width:96px">Used in</th><th>This workflow: input → output</th></tr>
+      <tr><td><b>Open page</b></td><td>Page URL</td><td><span style="color:var(--faint)">— (none)</span></td><td>Node 1</td>
+          <td>the Wikipedia URL → live browsing session</td></tr>
+      <tr><td><b>Loop</b></td><td>Number of iterations <i>or</i> list</td><td>same <span style="color:var(--faint)">(index from 1)</span></td><td>Node 2</td>
+          <td><code>10</code> → index <code>i</code> = 1…10</td></tr>
+      <tr><td><b>ExtractHTML</b></td><td>Element DOM path</td><td>Text</td><td>Nodes 2.1, 2.3, 2.4, 2.5</td>
+          <td>XPath (with <code>{{index}}</code> substituted) → cell text</td></tr>
+      <tr><td><b>Parse number</b></td><td>String</td><td><b>String</b> <span style="color:var(--amber)">⚠ desc. says “Int”</span></td><td>Node 2.2</td>
+          <td><code>year_text</code> → <code>year</code> — row-validity gate; type caveat in <b>#11</b></td></tr>
+      <tr><td><b>Detour</b></td><td><span style="color:var(--faint)">— (blank in guide)</span></td><td><span style="color:var(--faint)">— (blank)</span></td><td>Node 2.6</td>
+          <td>“all three text fields non-empty?” → run append branch, then resume</td></tr>
+      <tr><td><b>Call API</b></td><td colspan="2"><span style="color:var(--faint)">— (blank; “same as a call from Postman”)</span></td><td>Nodes 2.7, 3</td>
+          <td>POST <code>…values/Sheet1!A:D:append</code> → HTTP 200 (full config in panel D)</td></tr>
+      <tr><td colspan="5" style="background:var(--gray-t);color:var(--muted)"><b>Fill text field · Click · Check Box</b> — not used;
+          each is listed in the legend above with the reason it’s unnecessary for a read-only extraction.</td></tr>
+    </table>
+    <p class="fine">Two honest notes: (1) <b>Parse number</b>’s guide row contradicts itself — Output column says “String”, description says “Int”;
+      the workflow doesn’t depend on the resolution (edge case #11). (2) One assumption, and it’s the intended one: the Loop’s
+      <code>index</code> is interpolated into ExtractHTML’s DOM-path string — the reason the Loop step and the “index starts from 1” note exist.</p>
   </section>
 
   <!-- ================= SETUP ================= -->
