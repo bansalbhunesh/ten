@@ -11,11 +11,13 @@ table and appends each row to a Google Sheet via the **Google Sheets API
 
 ## The deliverable
 
+**View it in a browser: <https://bansalbhunesh.github.io/ten/>**
+
 | File | What it is |
 |---|---|
 | [`exports/flowchart.png`](exports/flowchart.png) | The flowchart — full-resolution image (primary deliverable) |
 | [`exports/flowchart.pdf`](exports/flowchart.pdf) | Same document as a paginated A3 PDF |
-| [`flowchart.html`](flowchart.html) | Source of the document — open in any browser |
+| [`flowchart.html`](flowchart.html) | Source of the document — open in any browser (`index.html` redirects here for GitHub Pages) |
 
 ## Workflow at a glance
 
