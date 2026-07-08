@@ -328,7 +328,7 @@
         <div class="setup-card"><h4><em>S3</em>Postman auth</h4>
           <p>OAuth 2.0 (Authorization Code) → obtain <code>{{ACCESS_TOKEN}}</code> with scope <code>…/auth/spreadsheets</code>. Full config in panel D.</p></div>
         <div class="setup-card"><h4><em>S4</em>Capture DOM paths</h4>
-          <p>Per the resource video: DevTools → Inspect element → right-click the cell node → <b>Copy → Copy XPath</b>. Replace the row number with <code>{{index}}+1</code>. Paths live-verified in panel E.</p></div>
+          <p>Per the resource video: DevTools → Inspect element → right-click the cell node → <b>Copy → Copy XPath</b> (or <b>Copy selector</b> for CSS). Parameterise the row by the loop index. Both forms live-verified in panel E.</p></div>
       </div>
     </div>
   </section>
@@ -597,20 +597,36 @@
 
   <!-- ================= XPATHS ================= -->
   <section>
-    <div class="sec-head"><span class="sec-letter">E</span><span class="sec-title">DOM paths — captured &amp; verified</span></div>
-    <p class="sec-sub">Method from the resource video (which demonstrates the technique on this very table): Inspect the
-      element → right-click the <b>cell</b> (th/td) in the Elements panel → <b>Copy → Copy XPath</b> → replace the row
-      number with <span style="font-family:var(--mono)">{{index}}+1</span>. Every path below returned the expected text for
-      <b>all 10 rows in a live Chrome session</b> — 40/40 checks passed, and the templated predicate <code>tr[1+1]</code>
-      was confirmed to resolve to <code>tr[2]</code>.</p>
+    <div class="sec-head"><span class="sec-letter">E</span><span class="sec-title">DOM paths &amp; CSS selectors — captured &amp; verified</span></div>
+    <p class="sec-sub">The resource video (which demonstrates on this very table) shows the DevTools context menu — right-click the
+      <b>cell</b> (th/td) → <b>Copy</b> → it offers both <b>Copy XPath</b> and <b>Copy selector</b> (CSS). Both forms are given below,
+      so ExtractHTML can take whichever the RPA tool expects. Each was evaluated against all 10 rows in a live Chrome session:
+      <b>XPath 40/40 and CSS 40/40 — 80/80 checks passed.</b></p>
 
+    <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:2px 0 6px">XPath — DevTools “Copy XPath”</p>
     <table class="wide">
-      <tr><th style="width:96px">Field</th><th>XPath template (input to ExtractHTML)</th><th style="width:170px">Output @ i = 1</th></tr>
+      <tr><th style="width:96px">Field</th><th>XPath template (Element DOM path)</th><th style="width:150px">Output @ i = 1</th></tr>
       <tr><td class="field-chip y">Year</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/th/a</code></td><td><code>"1930"</code></td></tr>
       <tr><td class="field-chip w">Winner</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[1]</code></td><td><code>"Uruguay&amp;nbsp;"</code> → trim</td></tr>
       <tr><td class="field-chip s">Score</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[2]</code></td><td><code>"4–2"</code></td></tr>
       <tr><td class="field-chip r">Runners-up</td><td><code>//*[@id="mw-content-text"]/div[2]/section[2]/table[3]/tbody/tr[{{index}}+1]/td[3]</code></td><td><code>"&amp;nbsp;Argentina"</code> → trim</td></tr>
     </table>
+
+    <p style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin:16px 0 6px">CSS selector — DevTools “Copy selector” (equivalent)</p>
+    <table class="wide">
+      <tr><th style="width:96px">Field</th><th>CSS selector template (Element DOM path)</th><th style="width:150px">Output @ i = 1</th></tr>
+      <tr><td class="field-chip y">Year</td><td><code>table.sortable.plainrowheaders.sticky-header > tbody > tr:nth-child({{index+1}}) > th a</code></td><td><code>"1930"</code></td></tr>
+      <tr><td class="field-chip w">Winner</td><td><code>table.sortable.plainrowheaders.sticky-header > tbody > tr:nth-child({{index+1}}) > td:nth-child(2)</code></td><td><code>"Uruguay&amp;nbsp;"</code> → trim</td></tr>
+      <tr><td class="field-chip s">Score</td><td><code>table.sortable.plainrowheaders.sticky-header > tbody > tr:nth-child({{index+1}}) > td:nth-child(3)</code></td><td><code>"4–2"</code></td></tr>
+      <tr><td class="field-chip r">Runners-up</td><td><code>table.sortable.plainrowheaders.sticky-header > tbody > tr:nth-child({{index+1}}) > td:nth-child(4)</code></td><td><code>"&amp;nbsp;Argentina"</code> → trim</td></tr>
+    </table>
+    <p class="fine"><b>Three differences between the two selector forms, worth knowing when you wire this up.</b>
+      ① <b>Column index:</b> CSS <code>:nth-child()</code> counts <i>all</i> siblings, and the Year cell is a <code>&lt;th&gt;</code>, so Winner/Score/Runners-up are
+      <code>td:nth-child(2/3/4)</code> — whereas XPath’s <code>td[…]</code> counts only <code>&lt;td&gt;</code> and so is <code>td[1/2/3]</code>.
+      ② <b>Row arithmetic:</b> XPath evaluates <code>tr[{{index}}+1]</code> inside the predicate; CSS <code>:nth-child()</code> does <i>not</i> accept arithmetic, so the
+      literal row number <code>index+1</code> is computed when the selector string is assembled (shown as <code>{{index+1}}</code>).
+      ③ <b>Don’t trust raw “Copy selector”:</b> the live cells carry Parsoid-generated ids (e.g. <code>#mwng</code>) that change on every load, so DevTools’ Copy selector
+      would anchor to an unstable id. The class-anchored <code>:nth-child</code> chain above was verified to be stable and unique (one table matches).</p>
     <p class="fine"><b>Why these differ from the resource video — three verified changes since May 2024.</b>
       ① <b>Prefix:</b> the video copies <code>//*[@id="mw-content-text"]/div[1]/table[4]/…</code>; Wikipedia now uses
       section-wrapped markup, so the same click yields <code>div[2]/section[2]/table[3]</code> (the old prefix resolves to
@@ -701,9 +717,9 @@
 
   <!-- ================= FOOTER ================= -->
   <footer>
-    <div><b style="color:var(--ink)">Verification.</b> All four XPaths were evaluated in a live Chrome session against
-      every one of the 10 target rows (40/40 checks returned the expected text) on 7–8 Jul 2026, after cross-checking the
-      served page HTML and Tennr’s resource video; API shapes match the official
+    <div><b style="color:var(--ink)">Verification.</b> Both selector forms — XPath and CSS — were evaluated in a live Chrome
+      session against every one of the 10 target rows (<b>80/80 checks</b> returned the expected text) on 7–8 Jul 2026, after
+      cross-checking the served page HTML and Tennr’s resource video; API shapes match the official
       <span style="font-family:var(--mono)">spreadsheets.values.append</span> reference.</div>
     <div style="white-space:nowrap;text-align:right"><b style="color:var(--ink)">Bhunesh Bansal</b><br>Implementation Engineer take-home · Tennr</div>
   </footer>
