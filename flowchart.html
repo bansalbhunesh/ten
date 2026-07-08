@@ -6,15 +6,15 @@
 <title>Wikipedia → Google Sheets · RPA Flowchart · Tennr IE Take-Home</title>
 <style>
   :root{
-    --paper:#FBF8F1; --card:#FFFFFF; --ink:#211B10; --muted:#6E6552; --faint:#9A917E;
-    --line:#E6DECC; --line-strong:#CFC5AC;
-    --orange:#D9481C; --orange-t:#FCEDE6; --orange-b:#F0B7A0;
-    --teal:#0E7268;  --teal-t:#E4F2F0;   --teal-b:#9ED0CA;
-    --indigo:#4438C2;--indigo-t:#ECEAFA; --indigo-b:#BBB4EC;
-    --blue:#1A56C4;  --blue-t:#E7EEFB;   --blue-b:#A8C0EE;
-    --amber:#A85A08; --amber-t:#FAF0DC;  --amber-b:#E3C48F;
-    --green:#177A3D; --green-t:#E6F3EA;  --green-b:#A4D2B3;
-    --gray:#66707E;  --gray-t:#F2F4F6;   --gray-b:#C6CDD6;
+    --paper:#EFF3F5; --card:#FFFFFF; --ink:#16222E; --muted:#556472; --faint:#8796A4;
+    --line:#DFE6EC; --line-strong:#C3CFD9;
+    --orange:#C0492A; --orange-t:#FAEAE4; --orange-b:#EBB7A3;
+    --teal:#0B6E77;  --teal-t:#E0EFF1;   --teal-b:#93C8CD;
+    --indigo:#443EAF;--indigo-t:#ECEBF8; --indigo-b:#B7B3E8;
+    --blue:#1C59BE;  --blue-t:#E5EDFA;   --blue-b:#A4C1EB;
+    --amber:#8F5D0C; --amber-t:#F6EED7;  --amber-b:#DEBE86;
+    --green:#137A45; --green-t:#DFEFE8;  --green-b:#96CAAC;
+    --gray:#5A6672;  --gray-t:#EBF0F3;   --gray-b:#C2CCD6;
     --mono:"Cascadia Code","Consolas",ui-monospace,SFMono-Regular,Menlo,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -29,10 +29,10 @@
   /* ============ masthead ============ */
   .masthead{border-bottom:3px solid var(--ink);padding-bottom:22px;margin-bottom:26px}
   .kicker{display:flex;align-items:center;gap:10px;font-size:11.5px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--orange);font-weight:700;margin-bottom:12px}
+    text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:12px}
   .kicker::after{content:"";flex:1;height:1px;background:var(--line-strong)}
   h1{font-size:33px;line-height:1.12;font-weight:750;letter-spacing:-.015em;max-width:22ch}
-  h1 .arrow{color:var(--orange)}
+  h1 .arrow{color:var(--teal)}
   .subtitle{margin-top:10px;font-size:15.5px;color:var(--muted);max-width:72ch}
   .meta-row{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px;font-size:12.5px;color:var(--muted)}
   .meta-row b{color:var(--ink);font-weight:650}
@@ -47,7 +47,7 @@
 
   /* ============ generic card ============ */
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
-    box-shadow:0 1px 2px rgba(60,48,20,.05)}
+    box-shadow:0 1px 2px rgba(22,34,46,.06)}
 
   /* ============ minimap ============ */
   .minimap{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:20px;
@@ -75,7 +75,7 @@
   .lg .use.yes{background:var(--green-t);border-color:var(--green-b);color:var(--green)}
 
   /* ============ setup lane ============ */
-  .setup{border:1.5px dashed var(--gray-b);border-radius:14px;background:#F7F6F2;padding:16px 18px 18px}
+  .setup{border:1.5px dashed var(--gray-b);border-radius:14px;background:#F0F4F7;padding:16px 18px 18px}
   .setup-tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:12px}
   .setup-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .setup-card{background:#fff;border:1px solid var(--gray-b);border-radius:10px;padding:11px 12px}
@@ -99,10 +99,10 @@
   .connector.tall{height:44px}
 
   .node{width:640px;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gray);
-    border-radius:10px;padding:13px 16px 13px 15px;box-shadow:0 1px 3px rgba(60,48,20,.07)}
+    border-radius:10px;padding:13px 16px 13px 15px;box-shadow:0 1px 3px rgba(22,34,46,.08)}
   .node.orange{border-left-color:var(--orange)} .node.teal{border-left-color:var(--teal)}
   .node.blue{border-left-color:var(--blue)}     .node.amber{border-left-color:var(--amber)}
-  .node.dashed{border-style:dashed;border-left-style:solid;background:#FDFCF9}
+  .node.dashed{border-style:dashed;border-left-style:solid;background:#F8FBFC}
 
   .node-top{display:flex;align-items:center;gap:9px;margin-bottom:6px}
   .num{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--faint)}
@@ -119,7 +119,7 @@
   .io{display:grid;grid-template-columns:64px 1fr;gap:4px 10px;font-size:12.3px}
   .io dt{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);padding-top:2px}
   .io dd code{display:block}
-  code{font-family:var(--mono);font-size:11.6px;background:#F5F2E9;border:1px solid var(--line);
+  code{font-family:var(--mono);font-size:11.6px;background:#EAEFF3;border:1px solid var(--line);
     border-radius:5px;padding:2px 7px;overflow-wrap:anywhere}
   .io .ex{color:var(--muted);font-size:11.6px;margin-top:2px}
   .io .ex code{display:inline;padding:1px 5px}
@@ -178,20 +178,20 @@
   .api-col h4:first-child{margin-top:0}
   table.kv{width:100%;border-collapse:collapse;font-size:12.2px}
   table.kv th,table.kv td{text-align:left;padding:5px 8px;border:1px solid var(--line);vertical-align:top}
-  table.kv th{background:#F5F2E9;font-size:10.8px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  table.kv th{background:#EAEFF3;font-size:10.8px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
   table.kv td code{background:transparent;border:none;padding:0}
   table.kv td:first-child{white-space:nowrap}
   table.kv td.why{color:var(--muted);font-size:11.6px}
-  pre{font-family:var(--mono);font-size:11.8px;line-height:1.55;background:#252014;color:#EFE9DA;
+  pre{font-family:var(--mono);font-size:11.8px;line-height:1.55;background:#152230;color:#EFE9DA;
     border-radius:9px;padding:13px 15px;overflow-x:auto}
-  pre .k{color:#93C7F1} pre .s{color:#F2B296} pre .n{color:#A9D9A9} pre .c{color:#8A8272}
+  pre .k{color:#93C7F1} pre .s{color:#F2B296} pre .n{color:#A9D9A9} pre .c{color:#7C8794}
   .api-note{font-size:11.8px;color:var(--muted);margin-top:8px}
   .api-note b{color:var(--ink)}
 
   /* ============ tables (xpaths, sheet) ============ */
   table.wide{width:100%;border-collapse:collapse;font-size:12.4px;background:#fff}
   table.wide th,table.wide td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
-  table.wide th{background:#F5F2E9;font-size:10.8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  table.wide th{background:#EAEFF3;font-size:10.8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
   table.wide td code{background:transparent;border:0;padding:0}
   .field-chip{font-weight:700;white-space:nowrap}
   .field-chip.y{color:var(--indigo)} .field-chip.w{color:var(--teal)}
@@ -201,7 +201,7 @@
   .sheet th,.sheet td{border:1px solid #D5DBE3;padding:5px 12px;text-align:left}
   .sheet thead th{background:#EEF1F5;color:#3C4657;font-size:11px;text-transform:none;font-family:var(--mono);text-align:center}
   .sheet td.rn{background:#EEF1F5;color:#3C4657;font-family:var(--mono);font-size:11px;text-align:center;width:36px}
-  .sheet tr.hdr td:not(.rn){background:#FBF4E4;font-weight:700}
+  .sheet tr.hdr td:not(.rn){background:#E9F1FB;font-weight:700}
   .sheet td.num{font-variant-numeric:tabular-nums}
   .fine{font-size:11.5px;color:var(--muted);margin-top:8px}
   .fine b{color:var(--ink)}
@@ -217,7 +217,7 @@
   /* ============ coverage ============ */
   table.cov{width:100%;border-collapse:collapse;font-size:12.4px;background:#fff}
   table.cov th,table.cov td{border:1px solid var(--line);padding:6px 10px;text-align:left}
-  table.cov th{background:#F5F2E9;font-size:10.8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+  table.cov th{background:#EAEFF3;font-size:10.8px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
   .yes{color:var(--green);font-weight:700} .no{color:var(--faint);font-weight:600}
 
   footer{margin-top:46px;border-top:3px solid var(--ink);padding-top:14px;
@@ -244,7 +244,7 @@
       9 steps in the provided IE Step Library</b>.</p>
     <div class="meta-row">
       <div><b>Candidate</b> · Bhunesh Bansal</div>
-      <div><b>Date</b> · 7 July 2026</div>
+      <div><b>Date</b> · 8 July 2026</div>
       <div><b>Source</b> · en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals</div>
       <div><b>Target</b> · Google Sheet — tab <span style="font-family:var(--mono)">Sheet1</span>, columns A:D</div>
     </div>
@@ -264,8 +264,9 @@
   <!-- ================= LEGEND ================= -->
   <section>
     <div class="sec-head"><span class="sec-letter">A</span><span class="sec-title">Reading guide — the Step Library</span></div>
-    <p class="sec-sub">Every executable node below is one of the library’s 9 steps (color-coded).
-      Steps the task does not need are accounted for, with the reason.</p>
+    <p class="sec-sub"><b>Constraint honored:</b> every executable node is one of the library’s 9 steps —
+      6 are used, the other 3 are listed with why they’re unnecessary. The brief says append to an “Excel sheet”;
+      the Google Sheets API only writes to a <i>native</i> Google Sheet, so the target is a converted Sheet (setup S1).</p>
     <div class="legend">
       <div class="card lg"><span class="swatch" style="background:var(--orange)"></span>
         <div><b>Open page</b><span>starts the RPA browsing session</span><span class="use yes">used ×1</span></div></div>
@@ -274,7 +275,7 @@
       <div class="card lg"><span class="swatch" style="background:var(--teal)"></span>
         <div><b>ExtractHTML</b><span>DOM path in → element text out</span><span class="use yes">used ×4 per iteration</span></div></div>
       <div class="card lg"><span class="swatch" style="background:var(--teal)"></span>
-        <div><b>Parse number</b><span>numeric string → Int</span><span class="use yes">used ×1 per iteration</span></div></div>
+        <div><b>Parse number</b><span>numeric string → number + row-validity gate</span><span class="use yes">used ×1 per iteration</span></div></div>
       <div class="card lg"><span class="swatch" style="background:var(--amber)"></span>
         <div><b>Detour</b><span>“if” — run branch when true, then resume</span><span class="use yes">used ×1 per iteration</span></div></div>
       <div class="card lg"><span class="swatch" style="background:var(--blue)"></span>
@@ -352,7 +353,8 @@
           <span class="chip">i = 1 → tr[2] = 1930 … i = 10 → tr[11] = 1974</span>
           <span class="chip">error inside an iteration ⇒ run continues at next index (library note)</span>
           <span class="chip">rows are processed top-to-bottom, so sheet order = table order</span>
-          <span class="chip">row selector tr[{{index}}+1] stays valid XPath after substitution — tr[1+1] ≡ tr[2]</span>
+          <span class="chip">row selector tr[{{index}}+1] stays valid XPath after substitution — tr[1+1] ≡ tr[2] (verified live)</span>
+          <span class="chip">how: the Loop substitutes {{index}} into each DOM-path string, then ExtractHTML resolves it</span>
         </div>
 
         <!-- 2.1 -->
@@ -373,10 +375,12 @@
             <span class="badge teal">Parse number</span></div>
           <dl class="io">
             <dt>Input</dt><dd><code>year_text</code> <div class="ex">String, e.g. <b>"1930"</b></div></dd>
-            <dt>Output</dt><dd><code>year</code> <div class="ex">Int, e.g. <b>1930</b> — lands in column A as a true number, not text.</div></dd>
+            <dt>Output</dt><dd><code>year</code> <div class="ex">Numeric, e.g. <b>1930</b> — appended unquoted so column A holds a real number, not text.</div></dd>
           </dl>
-          <div class="note"><b>Free row-guard:</b> if markup ever shifts and a non-numeric string is extracted,
-            this step errors → the Loop skips to the next index (library behaviour). Bad rows can never reach the sheet.</div>
+          <div class="note"><b>Primary purpose is a row-guard, not the conversion:</b> if markup ever shifts and a
+            non-numeric string reaches this step, it errors → the Loop skips to the next index (library behaviour), so
+            a malformed row can never reach the sheet. <b>Library type note:</b> the step’s <i>description</i> says it
+            returns an Int while its <i>Output</i> column lists “String” — the guard holds either way (see edge case #11).</div>
         </div>
         <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
 
@@ -403,7 +407,8 @@
             <dt>Output</dt><dd><div class="ex">Text → <code>score</code> &nbsp; e.g. i=1 → <b>"4–2"</b>, i=2 → <b>"2–1 (a.e.t.)"</b></div></dd>
           </dl>
           <div class="note">Scores use an <b>en dash (–, U+2013)</b>, not a hyphen. Row 4 (1950) carries a footnote
-            marker in the same cell — see edge case <span class="qbadge">#3</span>.</div>
+            marker in the same cell; the library has no string-editing step to strip it, so the whole cell is the honest
+            choice under the constraint — see edge case <span class="qbadge">#3</span>.</div>
         </div>
         <div class="mini-connector"><div class="connector" style="height:26px"><div class="stem"></div><div class="head"></div></div></div>
 
@@ -568,10 +573,11 @@
   <!-- ================= XPATHS ================= -->
   <section>
     <div class="sec-head"><span class="sec-letter">E</span><span class="sec-title">DOM paths — captured &amp; verified</span></div>
-    <p class="sec-sub">Method from the resource video: Inspect the element → right-click the <b>cell</b> (th/td) in the
-      Elements panel → <b>Copy → Copy XPath</b> → replace the row number with
-      <span style="font-family:var(--mono)">{{index}}+1</span>. Every path below returned the expected text for
-      <b>all 10 rows in a live Chrome session on 7 July 2026</b> — 40/40 checks passed.</p>
+    <p class="sec-sub">Method from the resource video (which demonstrates the technique on this very table): Inspect the
+      element → right-click the <b>cell</b> (th/td) in the Elements panel → <b>Copy → Copy XPath</b> → replace the row
+      number with <span style="font-family:var(--mono)">{{index}}+1</span>. Every path below returned the expected text for
+      <b>all 10 rows in a live Chrome session</b> — 40/40 checks passed, and the templated predicate <code>tr[1+1]</code>
+      was confirmed to resolve to <code>tr[2]</code>.</p>
 
     <table class="wide">
       <tr><th style="width:96px">Field</th><th>XPath template (input to ExtractHTML)</th><th style="width:170px">Output @ i = 1</th></tr>
@@ -653,21 +659,25 @@
         <p>Three things changed between the resource video (May 2024) and today — all caught live: the table prefix (<code>div[1]/table[4]</code> → <code>div[2]/section[2]/table[3]</code>), the header row’s home (<code>&lt;thead&gt;</code> → first <code>tbody</code> row, hence <code>tr[{{index}}+1]</code>), and the country-link nesting (<code>td[1]/a</code> vs <code>td[1]/span/a</code>, hence cell-level paths). The prefix lives in one variable, so the next drift is a one-field fix.</p></div>
       <div class="card edge"><h4><span class="n">#6</span>Never sort before extracting</h4>
         <p>The table is user-sortable; clicking a header re-orders <code>&lt;tr&gt;</code> elements and would silently remap every index. The workflow performs zero clicks — extraction happens on the default chronological order.</p></div>
-      <div class="card edge"><h4><span class="n">#7</span>Year as a real number</h4>
-        <p><b>Parse number</b> converts <code>"1930"</code> → <code>1930</code> so column A is sortable/filterable as numeric in Sheets — and doubles as a validity check on every row (parse failure ⇒ loop skips that index).</p></div>
+      <div class="card edge"><h4><span class="n">#7</span>Why Parse number earns its place</h4>
+        <p><b>Parse number</b> converts <code>"1930"</code> → <code>1930</code>. Its decisive value is the per-row validity gate (a non-numeric year ⇒ error ⇒ loop skips that index); the numeric column A is a secondary nicety, subject to the library’s type ambiguity in <b>#11</b>.</p></div>
       <div class="card edge"><h4><span class="n">#8</span>Re-runs are not idempotent</h4>
         <p><code>:append</code> always adds rows; running the workflow twice writes 20 rows. Clear <code>Sheet1!A2:D11</code> before a re-run (or point <code>RANGE</code> at a scratch tab while testing).</p></div>
       <div class="card edge"><h4><span class="n">#9</span>Flag icons pad the country cells</h4>
         <p>Winner/Runners-up cells carry a stray non-breaking space next to the flag icon (<code>"Uruguay&amp;nbsp;"</code>, <code>"&amp;nbsp;Argentina"</code> — measured live). Text extraction normally trims whitespace; if a platform ever kept it, the Detour still passes (non-empty) and a one-time <code>TRIM()</code> in Sheets cleans column B/D.</p></div>
       <div class="card edge"><h4><span class="n">#10</span>Why <code>tr[{{index}}+1]</code> is safe to template</h4>
-        <p>After the loop substitutes <code>{{index}}</code>, the predicate is plain XPath arithmetic — <code>tr[1+1]</code> evaluates to <code>tr[2]</code>. No string concatenation tricks, no off-by-one hidden in the path: the “+1 skips the header row” rule is visible in every step that uses it.</p></div>
+        <p>After substitution the predicate is plain XPath arithmetic — <code>tr[1+1]</code> evaluates to <code>tr[2]</code> (confirmed in a live browser). Two equally valid alternatives, noted for completeness: give the <b>Loop a list</b> <code>[2…11]</code> so <code>index</code> is the row number directly and the <code>+1</code> disappears; or use the self-documenting selector <code>tr[position()&gt;1][{{index}}]</code> (“skip the header, take the i-th data row”). The count-based <code>+1</code> form is chosen because it matches the <i>only</i> loop behaviour the library documents (index = 1…N).</p></div>
+      <div class="card edge"><h4><span class="n">#11</span>Parse number’s ambiguous output type</h4>
+        <p>The library row contradicts itself: the description says “converts … into its <b>Int</b> data type,” but the Output column reads “<b>String</b>.” The workflow doesn’t hinge on the resolution — the step earns its place as the row-validity gate (a non-numeric year errors and the loop skips that index). If the output is genuinely a string, year still appends correctly; column A’s numeric-vs-text nicety is the only thing at stake, and a one-time <code>=VALUE()</code>/format fix in Sheets settles it.</p></div>
+      <div class="card edge"><h4><span class="n">#12</span>Write authorization — why OAuth, not an API key</h4>
+        <p><code>values.append</code> is a write, so an API key alone is rejected (403). The chart uses Postman’s OAuth 2.0 Authorization Code flow (panel D); a Google <b>service account</b> with the sheet shared to its address is the equivalent server-to-server alternative. Either yields the <code>Bearer</code> token the Call API step needs.</p></div>
     </div>
   </section>
 
   <!-- ================= FOOTER ================= -->
   <footer>
     <div><b style="color:var(--ink)">Verification.</b> All four XPaths were evaluated in a live Chrome session against
-      every one of the 10 target rows (40/40 checks returned the expected text) on 7 Jul 2026, after cross-checking the
+      every one of the 10 target rows (40/40 checks returned the expected text) on 7–8 Jul 2026, after cross-checking the
       served page HTML and Tennr’s resource video frame-by-frame; API shapes match the official
       <span style="font-family:var(--mono)">spreadsheets.values.append</span> reference.</div>
     <div style="white-space:nowrap;text-align:right"><b style="color:var(--ink)">Bhunesh Bansal</b><br>Implementation Engineer take-home · Tennr</div>
